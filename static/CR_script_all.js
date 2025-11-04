@@ -556,17 +556,189 @@
     // Non-admin can save only allowed cycles; Admin can save all. Button remains visible for both.
   });
 
+  // ---------- Auto-save functionality ----------
+  let autoSaveTimer = null;
+  let autoRefreshTimer = null;
+  let isSaving = false;
+  let lastSaveTime = null;
+  
+  const p = new URLSearchParams(window.location.search);
+  const urlCustomer = p.get('customer');
+  const urlBid = p.get('bid');
+  const urlPo = p.get('po');
+  const urlCr = p.get('cr');
+  
+  function getPoKey() {
+    const customer = document.getElementById('customerName')?.value || urlCustomer || '';
+    const bid = document.getElementById('bidDt')?.value || urlBid || '';
+    const po = document.getElementById('poRevDt')?.value || urlPo || '';
+    const cr = document.getElementById('crRevDt')?.value || urlCr || '';
+    return `${customer}|${bid}|${po}|${cr}`.trim();
+  }
+  
+  function showSaveIndicator(message) {
+    let indicator = document.getElementById('autoSaveIndicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'autoSaveIndicator';
+      indicator.style.cssText = 'position:fixed;top:10px;right:10px;background:#4CAF50;color:white;padding:10px 20px;border-radius:4px;z-index:10000;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.2);';
+      document.body.appendChild(indicator);
+    }
+    indicator.textContent = message;
+    indicator.style.display = 'block';
+    
+    if (message.includes('✓')) {
+      indicator.style.background = '#4CAF50';
+      setTimeout(() => { indicator.style.display = 'none'; }, 2000);
+    } else if (message.includes('Error')) {
+      indicator.style.background = '#f44336';
+    } else {
+      indicator.style.background = '#2196F3';
+    }
+  }
+  
+  async function autoSaveForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||') return;
+    
+    if (isSaving) return;
+    isSaving = true;
+    
+    showSaveIndicator('💾 Saving...');
+    
+    const customer = document.getElementById('customerName')?.value || urlCustomer || '';
+    const bid = document.getElementById('bidDt')?.value || urlBid || '';
+    const po = document.getElementById('poRevDt')?.value || urlPo || '';
+    const cr = document.getElementById('crRevDt')?.value || urlCr || '';
+    
+    const rows = buildCRObjectsFromDOM();
+    
+    try {
+      const response = await fetch('/api/cr-form/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          poKey: poKey,
+          customer: customer,
+          bid: bid,
+          po: po,
+          cr: cr,
+          rows: rows
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        lastSaveTime = new Date();
+        showSaveIndicator(`✓ Auto-saved by ${data.lastModifiedBy || 'you'}`);
+      } else {
+        showSaveIndicator('❌ Error saving');
+      }
+    } catch (err) {
+      console.error('Auto-save error:', err);
+      showSaveIndicator('❌ Error saving');
+    } finally {
+      isSaving = false;
+    }
+  }
+  
+  function scheduleAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSaveForm, 2000);
+  }
+  
+  async function loadSavedForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||') return;
+    
+    try {
+      const response = await fetch(`/api/cr-form/load?poKey=${encodeURIComponent(poKey)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists && data.rows && data.rows.length > 0) {
+          showSaveIndicator('📥 Loading saved data...');
+          applyCRDataToDOM(data.rows);
+          enforceCRAccess();
+          if (data.lastModifiedBy) {
+            setTimeout(() => {
+              showSaveIndicator(`✓ Loaded (last saved by ${data.lastModifiedBy})`);
+            }, 500);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Load error:', err);
+    }
+  }
+  
+  async function autoRefreshForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||' || isSaving) return;
+    
+    try {
+      const response = await fetch(`/api/cr-form/load?poKey=${encodeURIComponent(poKey)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists && data.lastModifiedAt) {
+          const serverTime = new Date(data.lastModifiedAt);
+          if (!lastSaveTime || serverTime > lastSaveTime) {
+            applyCRDataToDOM(data.rows || []);
+            enforceCRAccess();
+            lastSaveTime = serverTime;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Auto-refresh error:', err);
+    }
+  }
+  
+  function startAutoRefresh() {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(autoRefreshForm, 5000);
+  }
+  
+  function attachAutoSaveListeners() {
+    document.querySelectorAll('#tbody tr').forEach(tr => {
+      tr.addEventListener('input', scheduleAutoSave);
+      tr.addEventListener('click', (e) => {
+        if (e.target.classList.contains('cycle')) {
+          scheduleAutoSave();
+        }
+      });
+    });
+    
+    ['customerName', 'bidDt', 'poRevDt', 'crRevDt'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', scheduleAutoSave);
+    });
+  }
+  
   // Auto-fill common fields from URL
   (function(){
-    const p = new URLSearchParams(window.location.search);
-    const customer = p.get('customer'); const bid = p.get('bid'); const po = p.get('po'); const cr = p.get('cr');
-    if (customer && document.getElementById('customerName')) document.getElementById('customerName').value = customer;
+    if (urlCustomer && document.getElementById('customerName')) document.getElementById('customerName').value = urlCustomer;
     if (document.getElementById('customerSelect')) {
       const sel = document.getElementById('customerSelect');
-      if (customer) sel.value = customer;
+      if (urlCustomer) sel.value = urlCustomer;
     }
-    if (bid && document.getElementById('bidDt')) document.getElementById('bidDt').value = bid;
-    if (po && document.getElementById('poRevDt')) document.getElementById('poRevDt').value = po;
-    if (cr && document.getElementById('crRevDt')) document.getElementById('crRevDt').value = cr;
+    if (urlBid && document.getElementById('bidDt')) document.getElementById('bidDt').value = urlBid;
+    if (urlPo && document.getElementById('poRevDt')) document.getElementById('poRevDt').value = urlPo;
+    if (urlCr && document.getElementById('crRevDt')) document.getElementById('crRevDt').value = urlCr;
   })();
+  
+  window.addEventListener('DOMContentLoaded', async () => {
+    await loadSavedForm();
+    attachAutoSaveListeners();
+    startAutoRefresh();
+  });
+  
+  if (addBtn) {
+    const originalAddListener = addBtn.onclick;
+    addBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        attachAutoSaveListeners();
+        scheduleAutoSave();
+      }, 100);
+    });
+  }
 })();
