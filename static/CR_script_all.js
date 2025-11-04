@@ -763,4 +763,15 @@
       }, 100);
     });
   }
+
+  // Amendment Details collapsible toggle
+  const amendmentNote = document.getElementById('amendmentNote');
+  if (amendmentNote) {
+    amendmentNote.addEventListener('click', (e) => {
+      if (e.target === amendmentNote) {
+        amendmentNote.classList.toggle('collapsed');
+        amendmentNote.classList.toggle('expanded');
+      }
+    });
+  }
 })();
