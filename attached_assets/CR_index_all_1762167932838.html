@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contract Review Check List — GTN ENGINEERING (INDIA) LIMITED</title>
+  <link rel="stylesheet" href="CR_styles_all.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top">
+      <div class="brand">
+        <h1>GTN ENGINEERING (INDIA) LIMITED</h1>
+        <h2>INTEGRATED MANAGEMENT SYSTEM RECORDS</h2>
+      </div>
+      <div class="meta">
+        <div><strong>Record No</strong> <span class="meta-box">SAL/R02/Y</span></div>
+        <div><strong>Date</strong> <span class="meta-box">19.05.2025</span></div>
+      </div>
+    </header>
+
+    <section class="doc-info">
+      <div class="left">
+        <!-- One-line fields -->
+        <div class="fields-grid">
+          <label for="customerName">Customer Name:</label>
+          <select id="customerName" class="field-select">
+            <option>TFMC SINGAPORE</option>
+            <option>TFMC SAUDI ARABIA</option>
+            <option>TFMC MALAYSIA</option>
+            <option>TFMC DUBAI</option>
+            <option>TFMC HYDERABAD</option>
+            <option>TFMC INDONESIA</option>
+            <option>TFMC MEXICO</option>
+            <option>TFMC ARGENTINA</option>
+            <option>TFMC BRAZIL</option>
+            <option>TFMC COLOMBIA</option>
+            <option>TFMC CANADA</option>
+            <option>TFMC HOUSTON</option>
+            <option>TFMC HOUSTON - KONGSBERG</option>
+            <option>TFMC VENEZUELA</option>
+            <option>TFMC GSP</option>
+          </select>
+
+          <label for="bidDt">BID./Dt:</label>
+          <input id="bidDt" class="field-input" type="text" placeholder="Enter BID number / date" />
+
+          <label for="poRevDt">PO#/Rev/Dt:</label>
+          <input id="poRevDt" class="field-input" type="text" placeholder="Enter PO / Rev / Date" />
+
+          <label for="crRevDt">CR#/Rev/Dt:</label>
+          <input id="crRevDt" class="field-input" type="text" placeholder="Enter CR / Rev / Date" />
+        </div>
+      </div>
+    </section>
+
+    <section class="table-actions">
+      <button id="addItemBtn">+ Add Item</button>
+      <button id="printBtn">Print / Save as PDF</button>
+      <button id="exportCsv">Export CSV</button>
+      <button id="resetBtn">Reset Cycles</button>
+      <small>Click a review cell to toggle: ✓ → x → NA → (blank)</small>
+    </section>
+    
+<div class="toolbar">
+  <!-- existing buttons ... -->
+  <button id="openSharedCsv" type="button">Open Shared CSV</button>
+  <button id="reloadSharedCsv" type="button">Reload</button>
+  <button id="saveSharedCsv" type="button">Save</button>
+  <span id="sharedCsvName" style="font-size:12px;color:#6b7280"></span>
+</div>
+
+    <section class="table-wrap">
+      <table id="review-table">
+        <thead>
+          <!-- Row 1: top-level label -->
+          <tr>
+            <th rowspan="4" class="narrow">Item No</th>
+            <th rowspan="4">Part #</th>
+            <th rowspan="4">Part Description</th>
+            <th rowspan="4" class="narrow">Rev</th>
+            <th rowspan="4" class="narrow">Qty in Nos</th>
+            <th colspan="62">Review Requirements</th>
+            <th rowspan="4" class="narrow">Remarks</th>
+            <th rowspan="4" class="actions-col">Actions</th>
+          </tr>
+
+          <!-- Row 2: main groups (Materials / Planning uses nested structure) -->
+          <tr>
+            <th colspan="9"  class="group">Engineering</th>
+            <th colspan="8"  class="group">Manufacturing</th>
+            <th colspan="8"  class="group">Materials / Planning</th>
+            <th colspan="6"  class="group">Purchase</th>
+            <th colspan="4"  class="group">Special Process / Outsource</th>
+            <th colspan="3"  class="group">Welding</th>
+            <th colspan="4"  class="group">Assembly &amp; Testing</th>
+            <th colspan="10" class="group">Quality Control / Assurance</th>
+            <th colspan="5"  class="group">Painting / Despatch</th>
+            <th colspan="4"  class="group">Customer Service and Sales</th>
+            <th colspan="1"  class="group">Commercial</th>
+          </tr>
+
+          <!-- Row 3: leafs for all other groups; Materials / Planning shows parents with children -->
+          <tr>
+            <!-- Engineering (rowspan to row 4) -->
+            <th rowspan="2">Is GTN Design to be followed</th>
+            <th rowspan="2">Feasibility of Design & Development</th>
+            <th rowspan="2">Is Design exists already</th>
+            <th rowspan="2">If Design not exists, Is GTN can able to develop against Customer requirements</th>
+            <th rowspan="2">Is API 6A Equipment</th>
+            <th rowspan="2">Is API 6A Monogram required</th>
+            <th rowspan="2">Is API 6A License available for this Equipment against PSL</th>
+            <th rowspan="2">Is involvement of customers in the design and development process required</th>
+            <th rowspan="2">Is all customer Specific requirements captured</th>
+
+            <!-- Manufacturing (rowspan to row 4) -->
+            <th rowspan="2">Is Customer Design to be followed</th>
+            <th rowspan="2">Feasibility of Development</th>
+            <th rowspan="2">Is complete documents received from Customer</th>
+            <th rowspan="2">Is any additional detail required from customer</th>
+            <th rowspan="2">Is the Manufacturing Feasible</th>
+            <th rowspan="2">The Tools / Jigs / Fixtures Available</th>
+            <th rowspan="2">Is the surface finish mentioned is achievable</th>
+            <th rowspan="2">Is the part size will fit into our inhouse/our existing supplier machines</th>
+
+            <!-- Materials / Planning (hierarchical like your image) -->
+            <th rowspan="2">Is Raw Material / Bought Out Available</th>
+            <th rowspan="2">Feasibility of material as per Part Report</th>
+            <th colspan="3">Availability of in-house Capacity</th>
+            <th colspan="2">Availability of outsource Capacity</th>
+            <th rowspan="2">Availability of SAP - Bill of Material and Routing</th>
+
+            <!-- Purchase (rowspan to row 4) -->
+            <th rowspan="2">Is the Minimum Order Quantity Sufficient</th>
+            <th rowspan="2">Is any Imported Items required</th>
+            <th rowspan="2">Is the existing supplier's capacity available</th>
+            <th rowspan="2">Is tooling / Patterns available at Supplier end</th>
+            <th rowspan="2">Is there any Purchase/Outsource activity with required New Supplier Qualification</th>
+            <th rowspan="2">Is the Minimum Order Quantity Sufficient (PoC)</th>
+
+            <!-- Special Process / Outsource (rowspan to row 4) -->
+            <th rowspan="2">Can we meet all the Special Process requirements</th>
+            <th rowspan="2">Is the parts requires outsourcing process</th>
+            <th rowspan="2">Is New process qualification required</th>
+            <th rowspan="2">Is the part requires welding / cladding / brazing</th>
+
+            <!-- Welding (rowspan to row 4) -->
+            <th rowspan="2">Is outsourcing required</th>
+            <th rowspan="2">Is New WPS / PQR / WPQ / process Qualification required</th>
+            <th rowspan="2">Is welding resources available (in-house)</th>
+
+            <!-- Assembly & Testing (rowspan to row 4) -->
+            <th rowspan="2">Is Assembly and Testing Procedures available</th>
+            <th rowspan="2">Is all the Testing Fixtures / Assembly Tools available</th>
+            <th rowspan="2">Is there any special consumables and grease required</th>
+            <th rowspan="2">Is there any Special Notes mentioned in Part Report / Drawing</th>
+
+            <!-- Quality Control / Assurance (rowspan to row 4) -->
+            <th rowspan="2">Is Ultrasonic Test (UT) Inspection Required</th>
+            <th rowspan="2">Is Magnetic Particle Inspection (MPI) Required</th>
+            <th rowspan="2">Is Liquid Penetrant Inspection (LPI) Required</th>
+            <th rowspan="2">Is Inspection required in ASNT or ISO 9712</th>
+            <th rowspan="2">Is Marking Instructions are Adequate</th>
+            <th rowspan="2">Is marking feasible at respective area</th>
+            <th rowspan="2">Is dimension inspection feasible</th>
+            <th rowspan="2">Is Measuring Instruments and Gauges are available</th>
+            <th rowspan="2">Is MIR / SDR applicable</th>
+            <th rowspan="2">Quality Documentation Requirement</th>
+
+            <!-- Painting / Despatch (rowspan to row 4) -->
+            <th rowspan="2">Can we meet all the painting requirements</th>
+            <th rowspan="2">Is the part needs special painting</th>
+            <th rowspan="2">Can we meet all Boxing Requirements</th>
+            <th rowspan="2">Is any special rust prevention / protection covers required</th>
+            <th rowspan="2">Is any Special Marking / stickering / stenciling required</th>
+
+            <!-- Customer Service and Sales (rowspan to row 4) -->
+            <th rowspan="2">Is the Part # available in SAP</th>
+            <th rowspan="2">Is Price Available</th>
+            <th rowspan="2">Is Price to Be Worked Out</th>
+            <th rowspan="2">Is MIR / SDR specified</th>
+
+            <!-- Commercial (rowspan to row 4) -->
+            <th rowspan="2">Legal Requirements</th>
+          </tr>
+
+          <!-- Row 4: Materials / Planning children -->
+          <tr>
+            <th>Machining</th>
+            <th>Special Process</th>
+            <th>Assy &amp; Testing</th>
+            <th>Machining</th>
+            <th>Special Process</th>
+          </tr>
+        </thead>
+
+        <tbody id="tbody">
+          <!-- initial rows 10 - 60 with 62 cycle cells -->
+          <tr>
+            <td class="fixed">10</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 62 cycle cells -->
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+
+          <tr>
+            <td class="fixed">20</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+
+          <tr>
+            <td class="fixed">30</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+
+          <tr>
+            <td class="fixed">40</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+
+          <tr>
+            <td class="fixed">50</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+
+          <tr>
+            <td class="fixed">60</td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="editable bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+            <td contenteditable class="fixed editable small bordered"></td>
+
+            <!-- 9 Engineering -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Manufacturing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 8 Materials / Planning -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 6 Purchase -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Special Process / Outsource -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 3 Welding -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Assembly & Testing -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 10 Quality -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 5 Painting -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 4 Customer Service -->
+            <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+            <!-- 1 Commercial -->
+            <td class="cycle"></td>
+
+            <td contenteditable class="editable bordered"></td>
+            <td class="row-actions"><button class="del-row">Delete</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Signature board (per-department columns, line + name row) -->
+    <section class="sign-board-wrap">
+      <table class="sign-board">
+        <thead>
+          <tr>
+            <th>Engineering</th>
+            <th>Manufacturing</th>
+            <th>Materials / Planning</th>
+            <th>Purchase</th>
+            <th>Special Process</th>
+            <th>Welding</th>
+            <th>Assembly &amp; Testing</th>
+            <th>Quality Control / Assurance</th>
+            <th>Painting / Despatch</th>
+            <th>Customer Service and Sales</th>
+            <th>Commercial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="sig-row">
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+            <td><div class="sig-line"></div></td>
+          </tr>
+          <tr class="name-row">
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Ilyas Khan N - DM</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Mukesh J - Manager</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Gowri Shankar R P - AM</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Vijayakumar M - DM</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Ragupathi A - DM</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Sriram S - Welding Engineer</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Mohammed Siddik N - Manager</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Sathish V - Engineer</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Senthil Kumar V - AM</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Indumathi - Manager</div>
+            </td>
+            <td>
+              <div class="name-label">Name &amp; Designation:</div>
+              <div class="sig-name" contenteditable>Puvaneswari S - AM</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="amend">
+      <div><strong>Amendment Details:</strong></div>
+      <div contenteditable class="note bordered">
+        Note: Please put ✓/ x / NA ( “✓”- Applicable / “x”- Not required  / “NA” - Not Applicable ) wherever applicable. Attach separate sheets if required. Highlight for New Part # / New Product. Product Specific Requirement (PSR) as per API 6A Latest Edition, Equipment Specific Requirement (ESR) as per Pressure Equipment Directive 2014/68/EU, Any Amendment Details will be communicated to relevant personnel through Work Orders. Packing Requirements to be done as per ISPM-15 Standard. Refer CSS/D09 - Review of Requirements for Contract Review Check List for Enquiry (Regular / New Product).
+      </div>
+    </section>
+  </div>
+
+  <!-- Page behavior (toggle cells, add row, CSV, etc.) lives in script_all.js -->
+  <script src="CR_script_all.js"></script>
+</body>
+</html>

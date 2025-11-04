@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contract Review Check List — GTN ENGINEERING (INDIA) LIMITED (Combined)</title>
+  <link rel="stylesheet" href="PED_styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top">
+      <div class="brand">
+        <h1>GTN ENGINEERING (INDIA) LIMITED</h1>
+        <h2>INTEGRATED MANAGEMENT SYSTEM RECORDS — COMBINED FORMS</h2>
+      </div>
+      <div class="meta">
+        <div><strong>Record No</strong> <span class="meta-box">SAL/R02/Y</span></div>
+        <div><strong>Date</strong> <span class="meta-box">19.05.2025</span></div>
+      </div>
+    </header>
+
+    <section class="doc-info">
+      <div class="left">
+        <div class="doc-row">
+          <label for="customerName">Customer Name:</label>
+          <select id="customerName" class="field-select" aria-label="Customer Name">
+            <option>TFMC SINGAPORE</option>
+            <option>TFMC SAUDI ARABIA</option>
+            <option>TFMC MALAYSIA</option>
+            <option>TFMC DUBAI</option>
+            <option>TFMC HYDERABAD</option>
+            <option>TFMC INDONESIA</option>
+            <option>TFMC MEXICO</option>
+            <option>TFMC ARGENTINA</option>
+            <option>TFMC BRAZIL</option>
+            <option>TFMC COLOMBIA</option>
+            <option>TFMC CANADA</option>
+            <option>TFMC HOUSTON</option>
+            <option>TFMC HOUSTON - KONGSBERG</option>
+            <option>TFMC VENEZUELA</option>
+            <option>TFMC GSP</option>
+          </select>
+
+          <label for="bidDt">BID./Dt:</label>
+          <input id="bidDt" class="field-input" type="text" placeholder="Enter BID number / date" />
+
+          <label for="poRevDt">PO#/Rev/Dt:</label>
+          <input id="poRevDt" class="field-input" type="text" placeholder="Enter PO / Rev / Date" />
+
+          <label for="crRevDt">CR#/Rev/Dt:</label>
+          <input id="crRevDt" class="field-input" type="text" placeholder="Enter CR / Rev / Date" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Combined PED Review + Dept Notes -->
+    <section class="form-block">
+      <h3>PED Review Checklist — Engineering / Manufacturing / Materials / Purchase + Dept Notes (Special Process / Welding / Assembly / Quality / Painting / Customer Service / Commercial)</h3>
+
+      <section class="table-actions">
+        <button id="addItemBtnPed" type="button">+ Add Item</button>
+        <button id="printBtnPed" type="button">Print / Save as PDF</button>
+        <button id="exportCsvPed" type="button">Export CSV</button>
+        <button id="resetBtnPed" type="button">Reset Cycles</button>
+        <small>Click a review cell to toggle: ✓ → x → NA → (blank). Dept notes are editable — double-click a dept-note to toggle its status (✓ → x → NA → blank) or press Ctrl+Enter when focused to toggle. Click to edit text.</small>
+      </section>
+
+      <section class="table-wrap">
+        <table id="review-table-ped" aria-label="PED Review Checklist">
+          <caption>PED Review Checklist — Engineering / Manufacturing / Materials / Purchase and Department Notes</caption>
+          <thead>
+            <tr>
+              <th scope="col" rowspan="3" class="narrow">Item No</th>
+              <th scope="col" rowspan="3">Part #</th>
+              <th scope="col" rowspan="3">Part Description</th>
+              <th scope="col" rowspan="3" class="narrow">Rev</th>
+              <th scope="col" rowspan="3" class="narrow">Qty in Nos</th>
+
+              <!-- Large group headings -->
+              <th scope="col" colspan="11" class="group-heading ped">PED Review Requirements (Engineering / Manufacturing / Materials / Purchase)</th>
+
+              <th scope="col" colspan="7" class="group-heading dept">PED Dept Notes (Special Process / Welding / Assembly / Quality / Painting / Customer Service / Commercial)</th>
+
+              <th scope="col" rowspan="3" class="narrow">Remarks</th>
+              <th scope="col" rowspan="3" class="actions-col">Actions</th>
+            </tr>
+
+            <tr>
+              <th scope="col" colspan="8" class="group">Engineering</th>
+              <th scope="col" colspan="1" class="group">Manufacturing</th>
+              <th scope="col" colspan="1" class="group">Materials / Planning</th>
+              <th scope="col" colspan="1" class="group">Purchase</th>
+
+              <th scope="col">Special Process</th>
+              <th scope="col">Welding</th>
+              <th scope="col">Assembly &amp; Testing</th>
+              <th scope="col">Quality Control / Assurance</th>
+              <th scope="col">Painting / Despatch</th>
+              <th scope="col">Customer Service &amp; Sales</th>
+              <th scope="col">Commercial</th>
+            </tr>
+
+            <tr>
+              <!-- Engineering (8) -->
+              <th scope="col">Is Bill of Material Provided for Pressure Equipment</th>
+              <th scope="col">Is applicable DBI / Drawing / Specification are Provided for Pressure Equipment</th>
+              <th scope="col">Is CE Marking Requirements applicable for this Pressure Equipment</th>
+              <th scope="col">Is this Pressure Equipment Group exists in latest PED Certificate</th>
+              <th scope="col">Whether Essential Health &amp; Safety Requirements are require to Capture</th>
+              <th scope="col">Whether Conformity Assessment Module H (Full QA) required? If not, specify</th>
+              <th scope="col">Is any Additional Details Required from Customer</th>
+              <th scope="col">Please Note if any Requirement / Remarks (Eng)</th>
+
+              <!-- Manufacturing (1) -->
+              <th scope="col">Please Note if any Requirement / Remarks (Mfg)</th>
+
+              <!-- Materials / Planning (1) -->
+              <th scope="col">Please Note if any Requirement / Remarks (Mat/Plan)</th>
+
+              <!-- Purchase (1) -->
+              <th scope="col">Is PED Required for Raw Material Supplier</th>
+
+              <!-- Dept notes detail labels (7) -->
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+              <th scope="col">Please Note if any Requirement / Remarks</th>
+            </tr>
+          </thead>
+
+          <tbody id="tbody-ped">
+            <!-- initial rows 10 - 100 (increment by 10) -->
+            <tr>
+              <td class="fixed">10</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <!-- ped cycle cells (11) -->
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <!-- dept-note cells (7) -->
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">20</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">30</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">40</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">50</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">60</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">70</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">80</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">90</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+
+            <tr>
+              <td class="fixed">100</td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="editable bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+              <td contenteditable class="fixed editable small bordered"></td>
+
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+              <td class="cycle"></td><td class="cycle"></td><td class="cycle"></td>
+
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+              <td contenteditable class="editable bordered dept-note"></td>
+
+              <td contenteditable class="editable bordered"></td>
+              <td class="row-actions"><button class="del-row" type="button">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Updated sign-board (table-based) -->
+      <section class="sign-block sign-board" aria-label="Sign-board">
+        <div class="table-wrap signboard-wrap">
+          <table class="signboard-table" aria-label="Signatures">
+            <thead>
+              <tr>
+                <th scope="col">Engineering</th>
+                <th scope="col">Manufacturing</th>
+                <th scope="col">Materials / Planning</th>
+                <th scope="col">Purchase</th>
+                <th scope="col">Special Process</th>
+                <th scope="col">Welding</th>
+                <th scope="col">Assembly &amp; Testing</th>
+                <th scope="col">Quality Control / Assurance</th>
+                <th scope="col">Painting / Despatch</th>
+                <th scope="col">Customer Service and Sales</th>
+                <th scope="col">Commercial</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <!-- signature lines row -->
+              <tr class="sig-line-row">
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+                <td><div class="sig-line" aria-hidden="true"></div></td>
+              </tr>
+
+              <!-- names & designations row -->
+              <tr class="sig-name-row">
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Ilyas Khan N - DM</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Mukesh J - Manager</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Gowri Shankar R P - AM</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Vijayakumar M - DM</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Ragupathi A - DM</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Sriram S - Welding Engineer</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Mohammed Siddik N - Manager</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Sathish V - Engineer</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Senthil Kumar V - AM</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Indumathi A - Manager</span></div>
+                </td>
+                <td>
+                  <div class="sig-label">Name &amp; Designation:</div>
+                  <div class="sig-name"><span contenteditable>Puvaneswari S - AM</span></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section class="amend">
+      <div><strong>Amendment Details:</strong></div>
+      <div contenteditable class="note bordered">
+        Note: Please put ✓/ x / NA ( “✓”- Applicable / “x”- Not required  / “NA” - Not Applicable ) wherever applicable. Attach separate sheets if required. Highlight for New Part # / New Product. Product Specific Requirement (PSR) as per API 6A Latest Edition, Equipment Specific Requirement (ESR) as per Pressure Equipment Directive 2014/68/EU, Any Amendment Details will be communicated to relevant personnel through Work Orders. Packing Requirements to be done as per ISPM-15 Standard. Refer CSS/D09 - Review of Requirements for Contract Review Check List for Enquiry (Regular / New Product).
+      </div>
+    </section>
+
+  </div>
+
+  <script src="PED_script.js"></script>
+</body>
+</html>

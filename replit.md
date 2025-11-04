@@ -1,0 +1,133 @@
+# GTN Engineering Contract Review Dashboard
+
+## Overview
+Flask + SQLite application for managing multi-PO (Purchase Order) contract review with role-based access control for GTN Engineering (India) Limited.
+
+**Current State**: Fully functional Flask backend with SQLite database, user authentication, PO management, and three form types (CR, PED, LEAD).
+
+**Last Updated**: November 3, 2025
+
+## Recent Changes
+- November 3, 2025: Initial Flask + SQLite implementation
+  - Created Flask backend with session-based authentication
+  - Implemented SQLite database schema for users and POs
+  - Migrated all frontend files to static folder
+  - Updated JavaScript files to use Flask API endpoints instead of localStorage
+  - Preserved all original HTML/CSS/JS files exactly as provided
+  - Configured Flask workflow to run on port 5000
+  - **Security Fix**: Fixed critical backup/restore vulnerability
+    - Backup now includes password_hash field to preserve original credentials
+    - Restore validates password_hash format (pbkdf2/scrypt/bcrypt prefixes)
+    - Added transaction safety with rollback on error
+    - Prevents credential injection attacks
+
+## Project Architecture
+
+### Backend (Flask + SQLite)
+- **app.py**: Main Flask application
+  - Session-based authentication with werkzeug password hashing
+  - Role-based access control (Admin vs non-Admin users)
+  - RESTful API endpoints for users, POs, backup/restore
+  - SQLite database with users and pos tables
+  - Default admin user: username=`admin`, password=`admin`
+
+### Database Schema
+1. **users table**:
+   - id (PRIMARY KEY)
+   - username (UNIQUE, NOT NULL)
+   - password_hash (NOT NULL)
+   - name (NOT NULL)
+   - department (NOT NULL)
+   - is_admin (BOOLEAN, DEFAULT 0)
+   - created_at (TIMESTAMP)
+
+2. **pos table**:
+   - id (PRIMARY KEY)
+   - customer (NOT NULL)
+   - bid (NOT NULL)
+   - po (NOT NULL)
+   - cr (NOT NULL)
+   - created_at, updated_at (TIMESTAMP)
+
+### Frontend (Static Files)
+All original HTML/CSS/JS files preserved in `static/` folder:
+- **Login**: login.html, login_styles.css, login_script.js
+- **Master Dashboard**: master.html, master_styles.css, master_script.js
+- **User Management**: manage_users.html, manage_users_styles.css, manage_users_script.js
+- **CR Form**: CR_index_all.html, CR_styles_all.css, CR_script_all.js
+- **PED Form**: PED_index.html, PED_styles.css, PED_script.js
+- **LEAD Form**: LEAD_index.html, LEAD_styles.css, LEAD_script.js
+
+### API Endpoints
+- `POST /api/login` - User login
+- `POST /api/logout` - User logout
+- `GET /api/session` - Get current session
+- `GET /api/users` - List all users (Admin only)
+- `POST /api/users` - Create new user (Admin only)
+- `DELETE /api/users/<id>` - Delete user (Admin only)
+- `GET /api/pos` - List all POs
+- `POST /api/pos` - Create new PO (Admin only)
+- `PUT /api/pos/<id>` - Update PO (Admin only)
+- `DELETE /api/pos/<id>` - Delete PO (Admin only)
+- `GET /api/backup` - Export users and POs as JSON (Admin only)
+- `POST /api/restore` - Restore users and POs from backup (Admin only)
+
+## User Roles and Permissions
+
+### Admin Users
+- Full access to all features
+- Can add, edit, delete POs
+- Can manage users (create, delete)
+- Can backup and restore data
+- Can open and edit all forms (CR, PED, LEAD)
+
+### Non-Admin Users
+- Read-only access to PO dashboard
+- Can view POs and open forms
+- Cannot add, edit, or delete POs
+- Cannot manage users
+- Cannot backup or restore data
+- Form editing permissions:
+  - **CR Form**: Can edit only their department's cycle columns
+  - **PED Form**: Can edit only their department's PED cycles and note cells
+  - **LEAD Form**: Read-only (Admin-editable only)
+
+## Department List
+1. IT
+2. CSS
+3. Engineering (9 CR cycles, 8 PED cycles)
+4. Manufacturing (8 CR cycles, 1 PED cycle)
+5. Materials/Planning (8 CR cycles, 1 PED cycle)
+6. Purchase (6 CR cycles, 1 PED cycle)
+7. Special Process (4 CR cycles)
+8. Welding (3 CR cycles)
+9. Assembly & Testing (4 CR cycles)
+10. Quality (10 CR cycles)
+11. Painting/Despatch (5 CR cycles)
+12. Customer Service & Sales (4 CR cycles)
+13. Commercial (1 CR cycle)
+
+## Form Types
+1. **Contract Review (CR)**: 62 cycle columns mapped to 11 departments
+2. **PED Review**: 11 PED cycles + 7 department note cells
+3. **Lead Time**: Admin-editable, read-only for others
+
+## Security Features
+- Password hashing with werkzeug.security
+- Session-based authentication using Flask sessions
+- CSRF protection via session secrets
+- Role-based access control enforced on both frontend and backend
+- Safety checks: Cannot delete last admin user or default admin
+- Backup/restore validates admin user presence
+
+## Running the Application
+1. Flask server runs on port 5000 (configured in workflow)
+2. Default credentials: `admin` / `admin`
+3. Database automatically initialized on first run
+4. Access via web browser at the Replit URL
+
+## User Preferences
+- All original HTML/CSS/JS files must be preserved exactly as provided
+- No modifications to the frontend structure allowed
+- Backend handles authentication and data storage
+- Frontend uses localStorage only for session info, all data from API
