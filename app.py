@@ -42,6 +42,34 @@ def init_db():
         )
     ''')
     
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS cr_forms (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            po_key TEXT UNIQUE NOT NULL,
+            customer TEXT,
+            bid TEXT,
+            po TEXT,
+            cr TEXT,
+            last_modified_by TEXT,
+            last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS cr_form_rows (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cr_form_id INTEGER NOT NULL,
+            item_no TEXT NOT NULL,
+            part_number TEXT,
+            part_description TEXT,
+            rev TEXT,
+            qty TEXT,
+            cycles TEXT,
+            remarks TEXT,
+            FOREIGN KEY (cr_form_id) REFERENCES cr_forms(id) ON DELETE CASCADE
+        )
+    ''')
+    
     cursor = db.execute('SELECT COUNT(*) as count FROM users WHERE username = ?', ('admin',))
     if cursor.fetchone()['count'] == 0:
         db.execute(
@@ -390,6 +418,142 @@ def restore_data():
         return jsonify({'success': True})
     except Exception as e:
         db.rollback()
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cr-form/save', methods=['POST'])
+@login_required
+def save_cr_form():
+    import json
+    data = request.get_json()
+    
+    po_key = data.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    customer = data.get('customer', '').strip()
+    bid = data.get('bid', '').strip()
+    po = data.get('po', '').strip()
+    cr = data.get('cr', '').strip()
+    rows = data.get('rows', [])
+    
+    username = session.get('username', 'unknown')
+    
+    db = get_db()
+    try:
+        db.execute('BEGIN TRANSACTION')
+        
+        cursor = db.execute('SELECT id FROM cr_forms WHERE po_key = ?', (po_key,))
+        form = cursor.fetchone()
+        
+        if form:
+            form_id = form['id']
+            db.execute('''
+                UPDATE cr_forms 
+                SET customer = ?, bid = ?, po = ?, cr = ?, 
+                    last_modified_by = ?, last_modified_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (customer, bid, po, cr, username, form_id))
+            
+            db.execute('DELETE FROM cr_form_rows WHERE cr_form_id = ?', (form_id,))
+        else:
+            db.execute('''
+                INSERT INTO cr_forms (po_key, customer, bid, po, cr, last_modified_by)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (po_key, customer, bid, po, cr, username))
+            form_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
+        
+        for row in rows:
+            item_no = row.get('key', '')
+            if not item_no:
+                continue
+            
+            cycles_json = json.dumps(row.get('cycles', []))
+            
+            db.execute('''
+                INSERT INTO cr_form_rows 
+                (cr_form_id, item_no, part_number, part_description, rev, qty, cycles, remarks)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                form_id,
+                item_no,
+                row.get('part', ''),
+                row.get('desc', ''),
+                row.get('rev', ''),
+                row.get('qty', ''),
+                cycles_json,
+                row.get('remarks', '')
+            ))
+        
+        db.commit()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'lastModifiedBy': username,
+            'lastModifiedAt': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        db.rollback()
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/cr-form/load', methods=['GET'])
+@login_required
+def load_cr_form():
+    import json
+    po_key = request.args.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    db = get_db()
+    try:
+        cursor = db.execute('''
+            SELECT id, customer, bid, po, cr, last_modified_by, last_modified_at
+            FROM cr_forms
+            WHERE po_key = ?
+        ''', (po_key,))
+        form = cursor.fetchone()
+        
+        if not form:
+            db.close()
+            return jsonify({'exists': False})
+        
+        form_id = form['id']
+        
+        rows_cursor = db.execute('''
+            SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
+            FROM cr_form_rows
+            WHERE cr_form_id = ?
+            ORDER BY id
+        ''', (form_id,))
+        
+        rows = []
+        for row in rows_cursor.fetchall():
+            cycles = json.loads(row['cycles']) if row['cycles'] else []
+            rows.append({
+                'key': row['item_no'],
+                'part': row['part_number'] or '',
+                'desc': row['part_description'] or '',
+                'rev': row['rev'] or '',
+                'qty': row['qty'] or '',
+                'cycles': cycles,
+                'remarks': row['remarks'] or ''
+            })
+        
+        db.close()
+        
+        return jsonify({
+            'exists': True,
+            'customer': form['customer'] or '',
+            'bid': form['bid'] or '',
+            'po': form['po'] or '',
+            'cr': form['cr'] or '',
+            'rows': rows,
+            'lastModifiedBy': form['last_modified_by'] or '',
+            'lastModifiedAt': form['last_modified_at'] or ''
+        })
+    except Exception as e:
         db.close()
         return jsonify({'error': str(e)}), 500
 
