@@ -132,34 +132,22 @@ td.cycle.locked{
 .amend{margin-top:12px;font-size:12px}
 .note{padding:8px;border:1px dashed #ccc;background:#fbfbfb;min-height:60px}
 
-/* Collapsible Amendment Details */
-.note.collapsible{
-  cursor:pointer;
-  position:relative;
-  transition:all 0.3s ease;
+/* Amendment Details Text Field */
+.amendment-field{
+  width:100%;
+  padding:8px;
+  border:1px solid #d0d7de;
+  border-radius:4px;
+  font-family:Arial, Helvetica, sans-serif;
+  font-size:12px;
+  background:#fff;
+  resize:vertical;
+  min-height:60px;
 }
-.note.collapsible.collapsed{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  min-height:auto;
-}
-.note.collapsible.expanded{
-  white-space:normal;
-}
-.note.collapsible:hover{
-  background:#f0f0f0;
-  border-color:#aaa;
-}
-.note.collapsible::after{
-  content:' [Click to expand]';
-  font-size:10px;
-  color:#666;
-  font-style:italic;
-  margin-left:8px;
-}
-.note.collapsible.expanded::after{
-  content:' [Click to collapse]';
+.amendment-field:focus{
+  outline:none;
+  border-color:var(--accent);
+  box-shadow:0 0 0 2px rgba(11,94,215,0.1);
 }
 
 /* focus styles for contenteditable */

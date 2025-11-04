@@ -548,15 +548,4 @@
     if (po && document.getElementById('poRevDt')) document.getElementById('poRevDt').value = po;
     if (cr && document.getElementById('crRevDt')) document.getElementById('crRevDt').value = cr;
   })();
-
-  // Amendment Details collapsible toggle
-  const amendmentNote = document.getElementById('amendmentNote');
-  if (amendmentNote) {
-    amendmentNote.addEventListener('click', (e) => {
-      if (e.target === amendmentNote) {
-        amendmentNote.classList.toggle('collapsed');
-        amendmentNote.classList.toggle('expanded');
-      }
-    });
-  }
 })();
