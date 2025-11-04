@@ -1,9 +1,10 @@
-modules = ["python-3.11"]
+modules = ["web", "nodejs-20", "python-3.11"]
 [agent]
 expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["openssl", "postgresql"]
 
 [workflows]
 runButton = "Project"
@@ -34,5 +35,9 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 32987
+localPort = 41759
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
