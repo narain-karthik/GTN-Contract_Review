@@ -8,6 +8,12 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 **Last Updated**: November 4, 2025
 
 ## Recent Changes
+- **November 4, 2025: Amendment Details Editable Field**
+  - Added dedicated textarea field for Admin to enter Amendment Details in CR and PED forms
+  - Field appears below the instructional "Note:" section
+  - Styled with proper focus effects and responsive sizing
+  - Admin can enter custom amendment details that will be visible to all users
+
 - **November 4, 2025: Auto-Save Feature for Contract Review Forms**
   - Implemented real-time auto-save functionality for CR forms
   - Added database tables (cr_forms, cr_form_rows) to persist form data
