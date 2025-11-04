@@ -5,9 +5,19 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 
 **Current State**: Fully functional Flask backend with SQLite database, user authentication, PO management, and three form types (CR, PED, LEAD).
 
-**Last Updated**: November 3, 2025
+**Last Updated**: November 4, 2025
 
 ## Recent Changes
+- **November 4, 2025: Auto-Save Feature for Contract Review Forms**
+  - Implemented real-time auto-save functionality for CR forms
+  - Added database tables (cr_forms, cr_form_rows) to persist form data
+  - Auto-save triggers 2 seconds after user stops typing
+  - Auto-refresh every 5 seconds to show changes from other users
+  - Concurrent edit protection: prevents data loss when multiple users edit simultaneously
+  - Visual indicators show save/load status in real-time
+  - Failed saves automatically retry
+  - All form data is now stored in database and visible to all users
+
 - November 3, 2025: Initial Flask + SQLite implementation
   - Created Flask backend with session-based authentication
   - Implemented SQLite database schema for users and POs
@@ -49,6 +59,21 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - cr (NOT NULL)
    - created_at, updated_at (TIMESTAMP)
 
+3. **cr_forms table** (Auto-save feature):
+   - id (PRIMARY KEY)
+   - po_key (UNIQUE, NOT NULL) - Composite key: customer|bid|po|cr
+   - customer, bid, po, cr (form header fields)
+   - last_modified_by (username)
+   - last_modified_at (TIMESTAMP)
+
+4. **cr_form_rows table** (Auto-save feature):
+   - id (PRIMARY KEY)
+   - cr_form_id (FOREIGN KEY to cr_forms)
+   - item_no (NOT NULL)
+   - part_number, part_description, rev, qty (TEXT)
+   - cycles (JSON array of 62 cycle values)
+   - remarks (TEXT)
+
 ### Frontend (Static Files)
 All original HTML/CSS/JS files preserved in `static/` folder:
 - **Login**: login.html, login_styles.css, login_script.js
@@ -71,6 +96,8 @@ All original HTML/CSS/JS files preserved in `static/` folder:
 - `DELETE /api/pos/<id>` - Delete PO (Admin only)
 - `GET /api/backup` - Export users and POs as JSON (Admin only)
 - `POST /api/restore` - Restore users and POs from backup (Admin only)
+- `POST /api/cr-form/save` - Auto-save CR form data (Authenticated users)
+- `GET /api/cr-form/load` - Load saved CR form data (Authenticated users)
 
 ## User Roles and Permissions
 
