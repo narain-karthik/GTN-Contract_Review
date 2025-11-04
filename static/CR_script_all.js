@@ -560,7 +560,10 @@
   let autoSaveTimer = null;
   let autoRefreshTimer = null;
   let isSaving = false;
+  let isDirty = false;
   let lastSaveTime = null;
+  let lastEditTime = null;
+  let saveStartTime = null;
   
   const p = new URLSearchParams(window.location.search);
   const urlCustomer = p.get('customer');
@@ -603,6 +606,7 @@
     
     if (isSaving) return;
     isSaving = true;
+    saveStartTime = new Date();
     
     showSaveIndicator('💾 Saving...');
     
@@ -630,19 +634,32 @@
       if (response.ok) {
         const data = await response.json();
         lastSaveTime = new Date();
-        showSaveIndicator(`✓ Auto-saved by ${data.lastModifiedBy || 'you'}`);
+        
+        if (!lastEditTime || lastEditTime <= saveStartTime) {
+          isDirty = false;
+          showSaveIndicator(`✓ Auto-saved by ${data.lastModifiedBy || 'you'}`);
+        } else {
+          showSaveIndicator(`✓ Saved - saving new changes...`);
+          setTimeout(() => autoSaveForm(), 100);
+        }
       } else {
-        showSaveIndicator('❌ Error saving');
+        isDirty = true;
+        showSaveIndicator('❌ Error saving - will retry');
+        scheduleAutoSave();
       }
     } catch (err) {
       console.error('Auto-save error:', err);
-      showSaveIndicator('❌ Error saving');
+      isDirty = true;
+      showSaveIndicator('❌ Error saving - will retry');
+      scheduleAutoSave();
     } finally {
       isSaving = false;
     }
   }
   
   function scheduleAutoSave() {
+    isDirty = true;
+    lastEditTime = new Date();
     if (autoSaveTimer) clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(autoSaveForm, 2000);
   }
@@ -673,7 +690,12 @@
   
   async function autoRefreshForm() {
     const poKey = getPoKey();
-    if (!poKey || poKey === '|||' || isSaving) return;
+    if (!poKey || poKey === '|||') return;
+    
+    if (isSaving || isDirty) return;
+    
+    const now = new Date();
+    if (lastEditTime && (now - lastEditTime) < 3000) return;
     
     try {
       const response = await fetch(`/api/cr-form/load?poKey=${encodeURIComponent(poKey)}`);
