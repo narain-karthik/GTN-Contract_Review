@@ -213,6 +213,187 @@
   });
   document.addEventListener('DOMContentLoaded', initExisting);
 
+  function collectFormData() {
+    const customer = document.getElementById('customerSelect')?.value || '';
+    const bid = document.getElementById('bidDt')?.value || '';
+    const po = document.getElementById('poRevDt')?.value || '';
+    const cr = document.getElementById('crRevDt')?.value || '';
+    const recordNo = document.getElementById('recordNo')?.value || '';
+    const recordDate = document.getElementById('recordDate')?.value || '';
+    
+    const poKey = `${customer}_${bid}_${po}_${cr}`;
+    
+    const rows = [];
+    document.querySelectorAll('#tbody tr').forEach(tr => {
+      const itemNo = tr.querySelector('td.fixed')?.textContent.trim() || '';
+      const part = tr.querySelector('.part')?.value || '';
+      const desc = tr.querySelector('.desc')?.value || '';
+      const rev = tr.querySelector('.rev')?.value || '';
+      const qty = tr.querySelector('.qty')?.value || '';
+      const custDate = tr.querySelector('.cust-date')?.value || '';
+      const leadTime = tr.querySelector('.lead-days')?.value || '';
+      const gtnDate = tr.querySelector('.gtn-date')?.value || '';
+      const remarks = tr.querySelector('.remarks')?.value || '';
+      
+      if (itemNo) {
+        rows.push({
+          itemNo,
+          part,
+          desc,
+          rev,
+          qty,
+          customerRequiredDate: custDate,
+          standardLeadTime: leadTime,
+          gtnAgreedDate: gtnDate,
+          remarks
+        });
+      }
+    });
+    
+    return { poKey, customer, bid, po, cr, recordNo, recordDate, rows };
+  }
+
+  async function saveForm() {
+    if (!isAdmin) { alert('Only Admin can save forms.'); return; }
+    
+    const data = collectFormData();
+    if (!data.customer || !data.bid || !data.po || !data.cr) {
+      alert('Please fill in Customer, BID#, PO#, and CR# before saving.');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/lead-form/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      if (response.ok && result.success) {
+        alert('LEAD form saved successfully!');
+      } else {
+        alert('Error saving form: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      alert('Error saving form: ' + error.message);
+    }
+  }
+
+  async function loadForm() {
+    const customer = document.getElementById('customerSelect')?.value || '';
+    const bid = document.getElementById('bidDt')?.value || '';
+    const po = document.getElementById('poRevDt')?.value || '';
+    const cr = document.getElementById('crRevDt')?.value || '';
+    
+    if (!customer || !bid || !po || !cr) {
+      alert('Please fill in Customer, BID#, PO#, and CR# to load a saved form.');
+      return;
+    }
+    
+    const poKey = `${customer}_${bid}_${po}_${cr}`;
+    
+    try {
+      const response = await fetch(`/api/lead-form/load?poKey=${encodeURIComponent(poKey)}`);
+      const result = await response.json();
+      
+      if (response.ok && result.exists) {
+        document.getElementById('recordNo').value = result.recordNo || '';
+        document.getElementById('recordDate').value = result.recordDate || '';
+        
+        const tbody = document.getElementById('tbody');
+        tbody.innerHTML = '';
+        
+        result.rows.forEach(rowData => {
+          const tr = document.createElement('tr');
+          
+          const tdItem = document.createElement('td');
+          tdItem.className = 'fixed';
+          tdItem.textContent = rowData.itemNo;
+          tr.appendChild(tdItem);
+          
+          const createInput = (cls, val) => {
+            const td = document.createElement('td');
+            const inp = document.createElement('input');
+            inp.className = cls;
+            inp.value = val || '';
+            if (!isAdmin) inp.disabled = true;
+            td.appendChild(inp);
+            return td;
+          };
+          
+          const createDateCell = (cls, val) => {
+            const td = document.createElement('td');
+            td.className = 'date-cell';
+            const input = document.createElement('input');
+            input.className = cls + ' cell-date';
+            input.type = 'date';
+            input.value = val || '';
+            input.disabled = !isAdmin;
+            const span = document.createElement('div');
+            span.className = 'date-text';
+            td.appendChild(input);
+            td.appendChild(span);
+            return td;
+          };
+          
+          tr.appendChild(createInput('cell-input part', rowData.part));
+          tr.appendChild(createInput('cell-input desc', rowData.desc));
+          tr.appendChild(createInput('cell-input rev', rowData.rev));
+          
+          const qtyTd = document.createElement('td');
+          const qtyInp = document.createElement('input');
+          qtyInp.className = 'cell-input qty';
+          qtyInp.type = 'number';
+          qtyInp.min = 0;
+          qtyInp.value = rowData.qty || '';
+          if (!isAdmin) qtyInp.disabled = true;
+          qtyTd.appendChild(qtyInp);
+          tr.appendChild(qtyTd);
+          
+          tr.appendChild(createDateCell('cust-date', rowData.customerRequiredDate));
+          
+          const leadTd = document.createElement('td');
+          const leadInp = document.createElement('input');
+          leadInp.className = 'cell-input lead-days';
+          leadInp.type = 'number';
+          leadInp.min = 0;
+          leadInp.value = rowData.standardLeadTime || '';
+          leadInp.placeholder = '0';
+          if (!isAdmin) leadInp.disabled = true;
+          leadTd.appendChild(leadInp);
+          tr.appendChild(leadTd);
+          
+          tr.appendChild(createDateCell('gtn-date', rowData.gtnAgreedDate));
+          tr.appendChild(createInput('cell-input remarks', rowData.remarks));
+          
+          const act = document.createElement('td');
+          act.className = 'row-actions';
+          const del = document.createElement('button');
+          del.className = 'del-row';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          act.appendChild(del);
+          tr.appendChild(act);
+          
+          tbody.appendChild(tr);
+          wireRow(tr);
+        });
+        
+        alert('LEAD form loaded successfully!');
+      } else if (response.ok && !result.exists) {
+        alert('No saved form found for this Customer/BID/PO/CR combination.');
+      } else {
+        alert('Error loading form: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      alert('Error loading form: ' + error.message);
+    }
+  }
+
+  document.getElementById('saveFormBtn')?.addEventListener('click', saveForm);
+  document.getElementById('loadFormBtn')?.addEventListener('click', loadForm);
+
   (function(){
     const p = new URLSearchParams(window.location.search);
     const customer = p.get('customer'); const bid = p.get('bid'); const po = p.get('po'); const cr = p.get('cr');

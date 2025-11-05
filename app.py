@@ -117,6 +117,38 @@ def init_db():
         )
     ''')
     
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS lead_forms (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            po_key TEXT UNIQUE NOT NULL,
+            customer TEXT,
+            bid TEXT,
+            po TEXT,
+            cr TEXT,
+            record_no TEXT,
+            record_date TEXT,
+            last_modified_by TEXT,
+            last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS lead_form_rows (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lead_form_id INTEGER NOT NULL,
+            item_no TEXT NOT NULL,
+            part_number TEXT,
+            part_description TEXT,
+            rev TEXT,
+            qty TEXT,
+            customer_required_date TEXT,
+            standard_lead_time TEXT,
+            gtn_agreed_date TEXT,
+            remarks TEXT,
+            FOREIGN KEY (lead_form_id) REFERENCES lead_forms(id) ON DELETE CASCADE
+        )
+    ''')
+    
     cursor = db.execute('SELECT COUNT(*) as count FROM users WHERE username = ?', ('admin',))
     if cursor.fetchone()['count'] == 0:
         db.execute(
@@ -811,6 +843,149 @@ def load_ped_form():
             'recordNo': form['record_no'] or '',
             'recordDate': form['record_date'] or '',
             'amendmentDetails': form['amendment_details'] or '',
+            'rows': rows,
+            'lastModifiedBy': form['last_modified_by'] or '',
+            'lastModifiedAt': form['last_modified_at'] or ''
+        })
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/lead-form/save', methods=['POST'])
+@login_required
+def save_lead_form():
+    import json
+    data = request.get_json()
+    
+    po_key = data.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    customer = data.get('customer', '').strip()
+    bid = data.get('bid', '').strip()
+    po = data.get('po', '').strip()
+    cr = data.get('cr', '').strip()
+    record_no = data.get('recordNo', '').strip()
+    record_date = data.get('recordDate', '').strip()
+    rows = data.get('rows', [])
+    
+    username = session.get('username', 'unknown')
+    
+    db = get_db()
+    try:
+        db.execute('BEGIN TRANSACTION')
+        
+        cursor = db.execute('SELECT id FROM lead_forms WHERE po_key = ?', (po_key,))
+        form = cursor.fetchone()
+        
+        if form:
+            form_id = form['id']
+            db.execute('''
+                UPDATE lead_forms 
+                SET customer = ?, bid = ?, po = ?, cr = ?, record_no = ?, record_date = ?,
+                    last_modified_by = ?, last_modified_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (customer, bid, po, cr, record_no, record_date, username, form_id))
+            
+            db.execute('DELETE FROM lead_form_rows WHERE lead_form_id = ?', (form_id,))
+        else:
+            db.execute('''
+                INSERT INTO lead_forms (po_key, customer, bid, po, cr, record_no, record_date, last_modified_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (po_key, customer, bid, po, cr, record_no, record_date, username))
+            form_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
+        
+        for row in rows:
+            item_no = row.get('itemNo', '')
+            if not item_no:
+                continue
+            
+            db.execute('''
+                INSERT INTO lead_form_rows 
+                (lead_form_id, item_no, part_number, part_description, rev, qty, 
+                 customer_required_date, standard_lead_time, gtn_agreed_date, remarks)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                form_id,
+                item_no,
+                row.get('part', ''),
+                row.get('desc', ''),
+                row.get('rev', ''),
+                row.get('qty', ''),
+                row.get('customerRequiredDate', ''),
+                row.get('standardLeadTime', ''),
+                row.get('gtnAgreedDate', ''),
+                row.get('remarks', '')
+            ))
+        
+        db.commit()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'lastModifiedBy': username,
+            'lastModifiedAt': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        db.rollback()
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/lead-form/load', methods=['GET'])
+@login_required
+def load_lead_form():
+    import json
+    po_key = request.args.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    db = get_db()
+    try:
+        cursor = db.execute('''
+            SELECT id, customer, bid, po, cr, record_no, record_date, last_modified_by, last_modified_at
+            FROM lead_forms
+            WHERE po_key = ?
+        ''', (po_key,))
+        form = cursor.fetchone()
+        
+        if not form:
+            db.close()
+            return jsonify({'exists': False})
+        
+        form_id = form['id']
+        
+        rows_cursor = db.execute('''
+            SELECT item_no, part_number, part_description, rev, qty, 
+                   customer_required_date, standard_lead_time, gtn_agreed_date, remarks
+            FROM lead_form_rows
+            WHERE lead_form_id = ?
+            ORDER BY id
+        ''', (form_id,))
+        
+        rows = []
+        for row in rows_cursor.fetchall():
+            rows.append({
+                'itemNo': row['item_no'],
+                'part': row['part_number'] or '',
+                'desc': row['part_description'] or '',
+                'rev': row['rev'] or '',
+                'qty': row['qty'] or '',
+                'customerRequiredDate': row['customer_required_date'] or '',
+                'standardLeadTime': row['standard_lead_time'] or '',
+                'gtnAgreedDate': row['gtn_agreed_date'] or '',
+                'remarks': row['remarks'] or ''
+            })
+        
+        db.close()
+        
+        return jsonify({
+            'exists': True,
+            'customer': form['customer'] or '',
+            'bid': form['bid'] or '',
+            'po': form['po'] or '',
+            'cr': form['cr'] or '',
+            'recordNo': form['record_no'] or '',
+            'recordDate': form['record_date'] or '',
             'rows': rows,
             'lastModifiedBy': form['last_modified_by'] or '',
             'lastModifiedAt': form['last_modified_at'] or ''
