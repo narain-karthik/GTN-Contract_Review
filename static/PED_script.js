@@ -233,6 +233,13 @@
       const el = document.getElementById(id);
       if (el) { el.disabled = true; el.classList.add('locked-edit'); }
     });
+    const amendmentField = document.getElementById('amendmentDetailsText');
+    if (amendmentField) { 
+      amendmentField.readOnly = true; 
+      amendmentField.classList.add('locked-edit');
+      amendmentField.style.backgroundColor = '#f3f4f6';
+      amendmentField.style.cursor = 'not-allowed';
+    }
   }
 
   // ---------- CSV helpers ----------
@@ -472,6 +479,209 @@
     }
   }
 
+  // ---------- Auto-save functionality ----------
+  let autoSaveTimer = null;
+  let autoRefreshTimer = null;
+  let isSaving = false;
+  let isDirty = false;
+  let lastSaveTime = null;
+  let lastEditTime = null;
+  let saveStartTime = null;
+  
+  const p = new URLSearchParams(window.location.search);
+  const urlCustomer = p.get('customer');
+  const urlBid = p.get('bid');
+  const urlPo = p.get('po');
+  const urlCr = p.get('cr');
+  
+  function getPoKey() {
+    const customer = document.getElementById('customerName')?.value || urlCustomer || '';
+    const bid = document.getElementById('bidDt')?.value || urlBid || '';
+    const po = document.getElementById('poRevDt')?.value || urlPo || '';
+    const cr = document.getElementById('crRevDt')?.value || urlCr || '';
+    return `${customer}|${bid}|${po}|${cr}`.trim();
+  }
+  
+  function showSaveIndicator(message) {
+    let indicator = document.getElementById('autoSaveIndicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'autoSaveIndicator';
+      indicator.style.cssText = 'position:fixed;top:10px;right:10px;background:#4CAF50;color:white;padding:10px 20px;border-radius:4px;z-index:10000;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.2);';
+      document.body.appendChild(indicator);
+    }
+    indicator.textContent = message;
+    indicator.style.display = 'block';
+    
+    if (message.includes('✓')) {
+      indicator.style.background = '#4CAF50';
+      setTimeout(() => { indicator.style.display = 'none'; }, 2000);
+    } else if (message.includes('Error')) {
+      indicator.style.background = '#f44336';
+    } else {
+      indicator.style.background = '#2196F3';
+    }
+  }
+  
+  function buildPEDObjectsFromDOM() {
+    const rows = [];
+    document.querySelectorAll('#tbody-ped tr').forEach(tr => {
+      rows.push(trToPedRow(tr));
+    });
+    return rows;
+  }
+  
+  async function autoSaveForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||') return;
+    
+    if (isSaving) return;
+    isSaving = true;
+    saveStartTime = new Date();
+    
+    showSaveIndicator('💾 Saving...');
+    
+    const customer = document.getElementById('customerName')?.value || urlCustomer || '';
+    const bid = document.getElementById('bidDt')?.value || urlBid || '';
+    const po = document.getElementById('poRevDt')?.value || urlPo || '';
+    const cr = document.getElementById('crRevDt')?.value || urlCr || '';
+    const recordNo = document.getElementById('recordNo')?.value || '';
+    const recordDate = document.getElementById('recordDate')?.value || '';
+    const amendmentDetails = document.getElementById('amendmentDetailsText')?.value || '';
+    
+    const rows = buildPEDObjectsFromDOM();
+    
+    try {
+      const response = await fetch('/api/ped-form/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          poKey: poKey,
+          customer: customer,
+          bid: bid,
+          po: po,
+          cr: cr,
+          recordNo: recordNo,
+          recordDate: recordDate,
+          amendmentDetails: amendmentDetails,
+          rows: rows
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        lastSaveTime = new Date();
+        
+        if (!lastEditTime || lastEditTime <= saveStartTime) {
+          isDirty = false;
+          showSaveIndicator(`✓ Auto-saved by ${data.lastModifiedBy || 'you'}`);
+        } else {
+          showSaveIndicator(`✓ Saved - saving new changes...`);
+          setTimeout(() => autoSaveForm(), 100);
+        }
+      } else {
+        isDirty = true;
+        showSaveIndicator('❌ Error saving - will retry');
+        scheduleAutoSave();
+      }
+    } catch (err) {
+      console.error('Auto-save error:', err);
+      isDirty = true;
+      showSaveIndicator('❌ Error saving - will retry');
+      scheduleAutoSave();
+    } finally {
+      isSaving = false;
+    }
+  }
+  
+  function scheduleAutoSave() {
+    isDirty = true;
+    lastEditTime = new Date();
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSaveForm, 2000);
+  }
+  
+  async function loadSavedForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||') return;
+    
+    try {
+      const response = await fetch(`/api/ped-form/load?poKey=${encodeURIComponent(poKey)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists && data.rows && data.rows.length > 0) {
+          showSaveIndicator('📥 Loading saved data...');
+          applyPEDDataToDOM(data.rows);
+          if (data.recordNo && document.getElementById('recordNo')) {
+            document.getElementById('recordNo').value = data.recordNo;
+          }
+          if (data.recordDate && document.getElementById('recordDate')) {
+            document.getElementById('recordDate').value = data.recordDate;
+          }
+          if (data.amendmentDetails && document.getElementById('amendmentDetailsText')) {
+            document.getElementById('amendmentDetailsText').value = data.amendmentDetails;
+          }
+          enforcePEDAccess();
+          if (data.lastModifiedBy) {
+            setTimeout(() => {
+              showSaveIndicator(`✓ Loaded (last saved by ${data.lastModifiedBy})`);
+            }, 500);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Load error:', err);
+    }
+  }
+  
+  async function autoRefreshForm() {
+    const poKey = getPoKey();
+    if (!poKey || poKey === '|||') return;
+    
+    if (isSaving || isDirty) return;
+    
+    try {
+      const response = await fetch(`/api/ped-form/load?poKey=${encodeURIComponent(poKey)}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.exists && data.lastModifiedAt) {
+          const serverTime = new Date(data.lastModifiedAt);
+          if (!lastSaveTime || serverTime > lastSaveTime) {
+            applyPEDDataToDOM(data.rows);
+            if (data.recordNo) document.getElementById('recordNo').value = data.recordNo;
+            if (data.recordDate) document.getElementById('recordDate').value = data.recordDate;
+            if (data.amendmentDetails) document.getElementById('amendmentDetailsText').value = data.amendmentDetails;
+            enforcePEDAccess();
+            lastSaveTime = serverTime;
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Auto-refresh error:', err);
+    }
+  }
+  
+  function startAutoRefresh() {
+    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+    autoRefreshTimer = setInterval(autoRefreshForm, 5000);
+  }
+  
+  function attachAutoSaveListeners() {
+    document.querySelectorAll('#tbody-ped tr').forEach(tr => {
+      tr.addEventListener('input', scheduleAutoSave);
+      tr.addEventListener('click', (e) => {
+        if (e.target.classList.contains('cycle') || e.target.classList.contains('dept-note')) {
+          scheduleAutoSave();
+        }
+      });
+    });
+    
+    ['customerName', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate', 'amendmentDetailsText'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', scheduleAutoSave);
+    });
+  }
+
   // Wire buttons
   if (addPedBtn) addPedBtn.addEventListener('click', () => {
     if (!isAdmin) { alert('Only Admin can add rows.'); return; }
@@ -529,11 +739,23 @@
   if (saveSharedBtn) saveSharedBtn.addEventListener('click', saveSharedCsv);
 
   // Init
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     initPedRowDelegation();
+    await loadSavedForm();
     enforcePEDAccess();
     lockHeaderFields();
+    attachAutoSaveListeners();
+    startAutoRefresh();
   });
+  
+  if (addPedBtn) {
+    addPedBtn.addEventListener('click', () => {
+      setTimeout(() => {
+        attachAutoSaveListeners();
+        scheduleAutoSave();
+      }, 100);
+    });
+  }
 
   // Auto-fill
   (function(){

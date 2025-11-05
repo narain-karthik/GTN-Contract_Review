@@ -202,6 +202,13 @@
       const el = document.getElementById(id);
       if (el) { el.disabled = true; el.classList.add('locked-edit'); }
     });
+    const amendmentField = document.getElementById('amendmentDetailsText');
+    if (amendmentField) { 
+      amendmentField.readOnly = true; 
+      amendmentField.classList.add('locked-edit');
+      amendmentField.style.backgroundColor = '#f3f4f6';
+      amendmentField.style.cursor = 'not-allowed';
+    }
   }
 
   function enforceCRAccess(){
@@ -616,6 +623,7 @@
     const cr = document.getElementById('crRevDt')?.value || urlCr || '';
     const recordNo = document.getElementById('recordNo')?.value || '';
     const recordDate = document.getElementById('recordDate')?.value || '';
+    const amendmentDetails = document.getElementById('amendmentDetailsText')?.value || '';
     
     const rows = buildCRObjectsFromDOM();
     
@@ -631,6 +639,7 @@
           cr: cr,
           recordNo: recordNo,
           recordDate: recordDate,
+          amendmentDetails: amendmentDetails,
           rows: rows
         })
       });
@@ -684,6 +693,9 @@
           }
           if (data.recordDate && document.getElementById('recordDate')) {
             document.getElementById('recordDate').value = data.recordDate;
+          }
+          if (data.amendmentDetails && document.getElementById('amendmentDetailsText')) {
+            document.getElementById('amendmentDetailsText').value = data.amendmentDetails;
           }
           enforceCRAccess();
           if (data.lastModifiedBy) {
@@ -740,7 +752,7 @@
       });
     });
     
-    ['customerName', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate'].forEach(id => {
+    ['customerName', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate', 'amendmentDetailsText'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', scheduleAutoSave);
     });

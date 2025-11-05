@@ -64,6 +64,12 @@ def init_db():
         db.execute('ALTER TABLE cr_forms ADD COLUMN record_date TEXT')
         db.commit()
     
+    try:
+        db.execute('SELECT amendment_details FROM cr_forms LIMIT 1')
+    except:
+        db.execute('ALTER TABLE cr_forms ADD COLUMN amendment_details TEXT')
+        db.commit()
+    
     db.execute('''
         CREATE TABLE IF NOT EXISTS cr_form_rows (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +82,38 @@ def init_db():
             cycles TEXT,
             remarks TEXT,
             FOREIGN KEY (cr_form_id) REFERENCES cr_forms(id) ON DELETE CASCADE
+        )
+    ''')
+    
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS ped_forms (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            po_key TEXT UNIQUE NOT NULL,
+            customer TEXT,
+            bid TEXT,
+            po TEXT,
+            cr TEXT,
+            record_no TEXT,
+            record_date TEXT,
+            amendment_details TEXT,
+            last_modified_by TEXT,
+            last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS ped_form_rows (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ped_form_id INTEGER NOT NULL,
+            item_no TEXT NOT NULL,
+            part_number TEXT,
+            part_description TEXT,
+            rev TEXT,
+            qty TEXT,
+            ped_cycles TEXT,
+            notes TEXT,
+            remarks TEXT,
+            FOREIGN KEY (ped_form_id) REFERENCES ped_forms(id) ON DELETE CASCADE
         )
     ''')
     
@@ -502,29 +540,35 @@ def save_cr_form():
     rows = data.get('rows', [])
     
     username = session.get('username', 'unknown')
+    is_admin = session.get('user_is_admin', False)
     
     db = get_db()
     try:
         db.execute('BEGIN TRANSACTION')
         
-        cursor = db.execute('SELECT id FROM cr_forms WHERE po_key = ?', (po_key,))
+        cursor = db.execute('SELECT id, amendment_details FROM cr_forms WHERE po_key = ?', (po_key,))
         form = cursor.fetchone()
+        
+        if is_admin:
+            amendment_details = data.get('amendmentDetails', '').strip()
+        else:
+            amendment_details = form['amendment_details'] if form else ''
         
         if form:
             form_id = form['id']
             db.execute('''
                 UPDATE cr_forms 
-                SET customer = ?, bid = ?, po = ?, cr = ?, record_no = ?, record_date = ?,
+                SET customer = ?, bid = ?, po = ?, cr = ?, record_no = ?, record_date = ?, amendment_details = ?,
                     last_modified_by = ?, last_modified_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            ''', (customer, bid, po, cr, record_no, record_date, username, form_id))
+            ''', (customer, bid, po, cr, record_no, record_date, amendment_details, username, form_id))
             
             db.execute('DELETE FROM cr_form_rows WHERE cr_form_id = ?', (form_id,))
         else:
             db.execute('''
-                INSERT INTO cr_forms (po_key, customer, bid, po, cr, record_no, record_date, last_modified_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (po_key, customer, bid, po, cr, record_no, record_date, username))
+                INSERT INTO cr_forms (po_key, customer, bid, po, cr, record_no, record_date, amendment_details, last_modified_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (po_key, customer, bid, po, cr, record_no, record_date, amendment_details, username))
             form_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
         
         for row in rows:
@@ -573,7 +617,7 @@ def load_cr_form():
     db = get_db()
     try:
         cursor = db.execute('''
-            SELECT id, customer, bid, po, cr, record_no, record_date, last_modified_by, last_modified_at
+            SELECT id, customer, bid, po, cr, record_no, record_date, amendment_details, last_modified_by, last_modified_at
             FROM cr_forms
             WHERE po_key = ?
         ''', (po_key,))
@@ -615,6 +659,158 @@ def load_cr_form():
             'cr': form['cr'] or '',
             'recordNo': form['record_no'] or '',
             'recordDate': form['record_date'] or '',
+            'amendmentDetails': form['amendment_details'] or '',
+            'rows': rows,
+            'lastModifiedBy': form['last_modified_by'] or '',
+            'lastModifiedAt': form['last_modified_at'] or ''
+        })
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ped-form/save', methods=['POST'])
+@login_required
+def save_ped_form():
+    import json
+    data = request.get_json()
+    
+    po_key = data.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    customer = data.get('customer', '').strip()
+    bid = data.get('bid', '').strip()
+    po = data.get('po', '').strip()
+    cr = data.get('cr', '').strip()
+    record_no = data.get('recordNo', '').strip()
+    record_date = data.get('recordDate', '').strip()
+    rows = data.get('rows', [])
+    
+    username = session.get('username', 'unknown')
+    is_admin = session.get('user_is_admin', False)
+    
+    db = get_db()
+    try:
+        db.execute('BEGIN TRANSACTION')
+        
+        cursor = db.execute('SELECT id, amendment_details FROM ped_forms WHERE po_key = ?', (po_key,))
+        form = cursor.fetchone()
+        
+        if is_admin:
+            amendment_details = data.get('amendmentDetails', '').strip()
+        else:
+            amendment_details = form['amendment_details'] if form else ''
+        
+        if form:
+            form_id = form['id']
+            db.execute('''
+                UPDATE ped_forms 
+                SET customer = ?, bid = ?, po = ?, cr = ?, record_no = ?, record_date = ?, amendment_details = ?,
+                    last_modified_by = ?, last_modified_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (customer, bid, po, cr, record_no, record_date, amendment_details, username, form_id))
+            
+            db.execute('DELETE FROM ped_form_rows WHERE ped_form_id = ?', (form_id,))
+        else:
+            db.execute('''
+                INSERT INTO ped_forms (po_key, customer, bid, po, cr, record_no, record_date, amendment_details, last_modified_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (po_key, customer, bid, po, cr, record_no, record_date, amendment_details, username))
+            form_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
+        
+        for row in rows:
+            item_no = row.get('key', '')
+            if not item_no:
+                continue
+            
+            ped_cycles_json = json.dumps(row.get('pedCycles', []))
+            notes_json = json.dumps(row.get('notes', []))
+            
+            db.execute('''
+                INSERT INTO ped_form_rows 
+                (ped_form_id, item_no, part_number, part_description, rev, qty, ped_cycles, notes, remarks)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                form_id,
+                item_no,
+                row.get('part', ''),
+                row.get('desc', ''),
+                row.get('rev', ''),
+                row.get('qty', ''),
+                ped_cycles_json,
+                notes_json,
+                row.get('remarks', '')
+            ))
+        
+        db.commit()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'lastModifiedBy': username,
+            'lastModifiedAt': datetime.utcnow().isoformat()
+        })
+    except Exception as e:
+        db.rollback()
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ped-form/load', methods=['GET'])
+@login_required
+def load_ped_form():
+    import json
+    po_key = request.args.get('poKey', '').strip()
+    if not po_key:
+        return jsonify({'error': 'PO key required'}), 400
+    
+    db = get_db()
+    try:
+        cursor = db.execute('''
+            SELECT id, customer, bid, po, cr, record_no, record_date, amendment_details, last_modified_by, last_modified_at
+            FROM ped_forms
+            WHERE po_key = ?
+        ''', (po_key,))
+        form = cursor.fetchone()
+        
+        if not form:
+            db.close()
+            return jsonify({'exists': False})
+        
+        form_id = form['id']
+        
+        rows_cursor = db.execute('''
+            SELECT item_no, part_number, part_description, rev, qty, ped_cycles, notes, remarks
+            FROM ped_form_rows
+            WHERE ped_form_id = ?
+            ORDER BY id
+        ''', (form_id,))
+        
+        rows = []
+        for row in rows_cursor.fetchall():
+            ped_cycles = json.loads(row['ped_cycles']) if row['ped_cycles'] else []
+            notes = json.loads(row['notes']) if row['notes'] else []
+            rows.append({
+                'key': row['item_no'],
+                'part': row['part_number'] or '',
+                'desc': row['part_description'] or '',
+                'rev': row['rev'] or '',
+                'qty': row['qty'] or '',
+                'pedCycles': ped_cycles,
+                'notes': notes,
+                'remarks': row['remarks'] or ''
+            })
+        
+        db.close()
+        
+        return jsonify({
+            'exists': True,
+            'customer': form['customer'] or '',
+            'bid': form['bid'] or '',
+            'po': form['po'] or '',
+            'cr': form['cr'] or '',
+            'recordNo': form['record_no'] or '',
+            'recordDate': form['record_date'] or '',
+            'amendmentDetails': form['amendment_details'] or '',
             'rows': rows,
             'lastModifiedBy': form['last_modified_by'] or '',
             'lastModifiedAt': form['last_modified_at'] or ''
