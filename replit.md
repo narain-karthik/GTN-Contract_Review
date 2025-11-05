@@ -8,15 +8,18 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 **Last Updated**: November 5, 2025
 
 ## Recent Changes
-- **November 5, 2025: LEAD Form Save/Load Functionality**
-  - Implemented complete save/load functionality for LEAD Time Calculation Sheet
+- **November 5, 2025: LEAD Form Auto-Save Functionality**
+  - Implemented complete auto-save functionality for LEAD Time Calculation Sheet
   - Added database tables (lead_forms and lead_form_rows) to persist LEAD form data
   - Created backend API endpoints (/api/lead-form/save and /api/lead-form/load)
-  - Added Save Form and Load Form buttons to the LEAD form interface
+  - Auto-save triggers 2 seconds after user stops typing (consistent with CR and PED forms)
+  - Auto-refresh every 5 seconds to show changes from other admin users
+  - Auto-refresh reconciles row additions/deletions made by other admins
   - LEAD form data now persists in database (previously only export was available)
-  - Admin-only save functionality - only admins can save/load forms
+  - Admin-only auto-save functionality - only admins can save/edit forms
   - Data includes: customer, bid, po, cr, record info, part details, dates, lead times, and remarks
-  - Follows the same pattern as CR and PED forms for consistency
+  - Visual save status indicator shows: "Saving...", "✓ Auto-saved by username", or "Error saving"
+  - All three forms (CR, PED, LEAD) now have identical auto-save behavior
 
 - **November 5, 2025: Amendment Details Auto-Save with Admin-Only Edit**
   - Implemented auto-save functionality for Amendment Details field in both CR and PED forms
@@ -121,7 +124,7 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - notes (JSON array of 7 department note values)
    - remarks (TEXT)
 
-7. **lead_forms table** (Manual save feature):
+7. **lead_forms table** (Auto-save feature):
    - id (PRIMARY KEY)
    - po_key (UNIQUE, NOT NULL) - Composite key: customer|bid|po|cr
    - customer, bid, po, cr (form header fields)
@@ -129,7 +132,7 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - last_modified_by (username)
    - last_modified_at (TIMESTAMP)
 
-8. **lead_form_rows table** (Manual save feature):
+8. **lead_form_rows table** (Auto-save feature):
    - id (PRIMARY KEY)
    - lead_form_id (FOREIGN KEY to lead_forms)
    - item_no (NOT NULL)
