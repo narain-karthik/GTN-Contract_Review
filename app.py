@@ -1006,9 +1006,15 @@ def export_cr_to_excel():
     from flask import make_response
     import os
     
-    template_path = 'attached_assets/CR_1762338481711.xlsx'
-    if not os.path.exists(template_path):
-        return jsonify({'error': 'Template file not found'}), 404
+    templates = {
+        'CR_1': 'attached_assets/CR_1762338481711.xlsx',
+        'CR_2': 'attached_assets/CR 2_1762338481710.xlsx',
+        'CR_3': 'attached_assets/CR 3_1762338481711.xlsx'
+    }
+    
+    for name, path in templates.items():
+        if not os.path.exists(path):
+            return jsonify({'error': f'Template file {name} not found'}), 404
     
     db = get_db()
     try:
@@ -1023,63 +1029,72 @@ def export_cr_to_excel():
             db.close()
             return jsonify({'error': 'No CR forms found to export'}), 404
         
+        cycle_mapping = {
+            'CR_1': (0, 21),
+            'CR_2': (21, 48),
+            'CR_3': (48, 72)
+        }
+        
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for form_idx, form in enumerate(forms):
                 form_id = form['id']
+                safe_customer = ''.join(c for c in (form['customer'] or 'Customer') if c.isalnum() or c in (' ', '_', '-'))[:30]
                 
-                wb = openpyxl.load_workbook(template_path)
-                ws = wb.active
-                ws.title = "CR"
-                
-                ws.cell(row=1, column=26, value=form['record_no'] or 'SAL/R02/Y')
-                ws.cell(row=2, column=26, value=form['record_date'] or '')
-                
-                ws.cell(row=3, column=2, value=form['customer'] or '')
-                ws.cell(row=3, column=5, value=form['bid'] or '')
-                ws.cell(row=3, column=8, value=form['po'] or '')
-                ws.cell(row=3, column=9, value=form['cr'] or '')
-                
-                ws.cell(row=16, column=1, value=form['amendment_details'] or '')
-                
-                rows_cursor = db.execute('''
-                    SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
-                    FROM cr_form_rows
-                    WHERE cr_form_id = ?
-                    ORDER BY id
-                ''', (form_id,))
-                
-                data_rows = rows_cursor.fetchall()
-                data_start_row = 8
-                
-                for row_idx, row in enumerate(data_rows):
-                    excel_row = data_start_row + row_idx
+                for template_key, template_path in templates.items():
+                    wb = openpyxl.load_workbook(template_path)
+                    ws = wb.active
+                    ws.title = "CR"
                     
-                    if excel_row > 12:
-                        break
+                    ws.cell(row=1, column=26, value=form['record_no'] or 'SAL/R02/Y')
+                    ws.cell(row=2, column=26, value=form['record_date'] or '')
                     
-                    ws.cell(row=excel_row, column=1, value=row['item_no'] or '')
-                    ws.cell(row=excel_row, column=2, value=row['part_number'] or '')
-                    ws.cell(row=excel_row, column=3, value=row['part_description'] or '')
-                    ws.cell(row=excel_row, column=4, value=row['rev'] or '')
-                    ws.cell(row=excel_row, column=5, value=row['qty'] or '')
+                    ws.cell(row=3, column=2, value=form['customer'] or '')
+                    ws.cell(row=3, column=5, value=form['bid'] or '')
+                    ws.cell(row=3, column=8, value=form['po'] or '')
+                    ws.cell(row=3, column=9, value=form['cr'] or '')
                     
-                    cycles = json.loads(row['cycles']) if row['cycles'] else []
+                    ws.cell(row=16, column=1, value=form['amendment_details'] or '')
                     
-                    for cycle_idx, cycle_val in enumerate(cycles):
-                        if cycle_idx < 21:
+                    rows_cursor = db.execute('''
+                        SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
+                        FROM cr_form_rows
+                        WHERE cr_form_id = ?
+                        ORDER BY id
+                    ''', (form_id,))
+                    
+                    data_rows = rows_cursor.fetchall()
+                    data_start_row = 8
+                    
+                    cycle_start, cycle_end = cycle_mapping[template_key]
+                    
+                    for row_idx, row in enumerate(data_rows):
+                        excel_row = data_start_row + row_idx
+                        
+                        if excel_row > 12:
+                            break
+                        
+                        ws.cell(row=excel_row, column=1, value=row['item_no'] or '')
+                        ws.cell(row=excel_row, column=2, value=row['part_number'] or '')
+                        ws.cell(row=excel_row, column=3, value=row['part_description'] or '')
+                        ws.cell(row=excel_row, column=4, value=row['rev'] or '')
+                        ws.cell(row=excel_row, column=5, value=row['qty'] or '')
+                        
+                        cycles = json.loads(row['cycles']) if row['cycles'] else []
+                        
+                        relevant_cycles = cycles[cycle_start:cycle_end]
+                        for cycle_idx, cycle_val in enumerate(relevant_cycles):
                             col_num = 6 + cycle_idx
                             ws.cell(row=excel_row, column=col_num, value=cycle_val if cycle_val else '')
+                        
+                        ws.cell(row=excel_row, column=27, value=row['remarks'] or '')
                     
-                    ws.cell(row=excel_row, column=27, value=row['remarks'] or '')
-                
-                excel_buffer = BytesIO()
-                wb.save(excel_buffer)
-                excel_buffer.seek(0)
-                
-                safe_customer = ''.join(c for c in (form['customer'] or 'Customer') if c.isalnum() or c in (' ', '_', '-'))[:30]
-                filename = f"CR_{form_idx + 1}_{safe_customer}.xlsx"
-                zip_file.writestr(filename, excel_buffer.read())
+                    excel_buffer = BytesIO()
+                    wb.save(excel_buffer)
+                    excel_buffer.seek(0)
+                    
+                    filename = f"{template_key}_{form_idx + 1}_{safe_customer}.xlsx"
+                    zip_file.writestr(filename, excel_buffer.read())
         
         db.close()
         
