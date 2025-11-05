@@ -58,13 +58,11 @@
     </section>
 
     <section class="table-actions">
-      <button id="saveFormBtn" type="button" aria-label="Save form to database" style="background-color: #28a745; color: white;">💾 Save Form</button>
-      <button id="loadFormBtn" type="button" aria-label="Load saved form from database" style="background-color: #17a2b8; color: white;">📂 Load Form</button>
       <button id="addItemBtn" type="button" aria-label="Add item">+ Add Item</button>
       <button id="printBtn" type="button" aria-label="Print or save as PDF">Print / Save as PDF</button>
       <button id="exportCsv" type="button" aria-label="Export table as CSV">Export CSV</button>
       <button id="resetBtn" type="button" aria-label="Reset table values">Reset Values</button>
-      <small>Customer Required Date and GTN Agreed Date are date fields. GTN Agreed Date auto-calculates as Customer Required Date minus Standard Lead Time (days).</small>
+      <small>Customer Required Date and GTN Agreed Date are date fields. GTN Agreed Date auto-calculates as Customer Required Date minus Standard Lead Time (days). <span id="saveStatus" style="color: #28a745; font-weight: bold;"></span></small>
     </section>
 
     <section class="table-wrap">
