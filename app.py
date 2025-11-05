@@ -1001,10 +1001,28 @@ def export_cr_to_excel():
     import openpyxl
     from openpyxl.styles import Font, Alignment
     from openpyxl.utils import get_column_letter
+    from openpyxl.cell.cell import MergedCell
     from io import BytesIO
     import zipfile
     from flask import make_response
     import os
+    
+    def build_merged_cell_map(ws):
+        merged_map = {}
+        for merged_range in ws.merged_cells.ranges:
+            min_row, min_col = merged_range.min_row, merged_range.min_col
+            for row in range(merged_range.min_row, merged_range.max_row + 1):
+                for col in range(merged_range.min_col, merged_range.max_col + 1):
+                    merged_map[(row, col)] = (min_row, min_col)
+        return merged_map
+    
+    def write_cell(ws, row, col, value, merged_map):
+        if (row, col) in merged_map:
+            anchor_row, anchor_col = merged_map[(row, col)]
+            cell = ws.cell(row=anchor_row, column=anchor_col)
+            cell.value = value
+        else:
+            ws.cell(row=row, column=col, value=value)
     
     templates = {
         'CR_1': 'attached_assets/CR_1762338481711.xlsx',
@@ -1046,19 +1064,21 @@ def export_cr_to_excel():
                     ws = wb.active
                     ws.title = "CR"
                     
+                    merged_map = build_merged_cell_map(ws)
+                    
                     if template_key == 'CR_2':
-                        ws.cell(row=1, column=25, value=form['record_no'] or 'SAL/R02/Y')
-                        ws.cell(row=2, column=25, value=form['record_date'] or '')
+                        write_cell(ws, 1, 25, form['record_no'] or 'SAL/R02/Y', merged_map)
+                        write_cell(ws, 2, 25, form['record_date'] or '', merged_map)
                     else:
-                        ws.cell(row=1, column=26, value=form['record_no'] or 'SAL/R02/Y')
-                        ws.cell(row=2, column=26, value=form['record_date'] or '')
+                        write_cell(ws, 1, 26, form['record_no'] or 'SAL/R02/Y', merged_map)
+                        write_cell(ws, 2, 26, form['record_date'] or '', merged_map)
                     
-                    ws.cell(row=3, column=2, value=form['customer'] or '')
-                    ws.cell(row=3, column=5, value=form['bid'] or '')
-                    ws.cell(row=3, column=8, value=form['po'] or '')
-                    ws.cell(row=3, column=9, value=form['cr'] or '')
+                    write_cell(ws, 3, 2, form['customer'] or '', merged_map)
+                    write_cell(ws, 3, 5, form['bid'] or '', merged_map)
+                    write_cell(ws, 3, 8, form['po'] or '', merged_map)
+                    write_cell(ws, 3, 9, form['cr'] or '', merged_map)
                     
-                    ws.cell(row=16, column=1, value=form['amendment_details'] or '')
+                    write_cell(ws, 16, 1, form['amendment_details'] or '', merged_map)
                     
                     rows_cursor = db.execute('''
                         SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
@@ -1078,20 +1098,20 @@ def export_cr_to_excel():
                         if excel_row > 12:
                             break
                         
-                        ws.cell(row=excel_row, column=1, value=row['item_no'] or '')
-                        ws.cell(row=excel_row, column=2, value=row['part_number'] or '')
-                        ws.cell(row=excel_row, column=3, value=row['part_description'] or '')
-                        ws.cell(row=excel_row, column=4, value=row['rev'] or '')
-                        ws.cell(row=excel_row, column=5, value=row['qty'] or '')
+                        write_cell(ws, excel_row, 1, row['item_no'] or '', merged_map)
+                        write_cell(ws, excel_row, 2, row['part_number'] or '', merged_map)
+                        write_cell(ws, excel_row, 3, row['part_description'] or '', merged_map)
+                        write_cell(ws, excel_row, 4, row['rev'] or '', merged_map)
+                        write_cell(ws, excel_row, 5, row['qty'] or '', merged_map)
                         
                         cycles = json.loads(row['cycles']) if row['cycles'] else []
                         
                         relevant_cycles = cycles[cycle_start:cycle_end]
                         for cycle_idx, cycle_val in enumerate(relevant_cycles):
                             col_num = 6 + cycle_idx
-                            ws.cell(row=excel_row, column=col_num, value=cycle_val if cycle_val else '')
+                            write_cell(ws, excel_row, col_num, cycle_val if cycle_val else '', merged_map)
                         
-                        ws.cell(row=excel_row, column=27, value=row['remarks'] or '')
+                        write_cell(ws, excel_row, 27, row['remarks'] or '', merged_map)
                     
                     excel_buffer = BytesIO()
                     wb.save(excel_buffer)
