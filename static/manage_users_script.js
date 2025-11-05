@@ -11,7 +11,15 @@
   const userContainer = document.getElementById('userContainer');
   const noUser = document.getElementById('noUser');
   const backBtn = document.getElementById('backBtn');
+  const formTitle = document.getElementById('formTitle');
+  const submitBtn = document.getElementById('submitBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const editUserId = document.getElementById('editUserId');
+  const passwordLabel = document.getElementById('passwordLabel');
+  const passwordInput = document.getElementById('password');
+  const usernameInput = document.getElementById('username');
   let users = [];
+  let editingUser = null;
 
   async function loadUsers() {
     try {
@@ -41,11 +49,46 @@
           <div class="dept">Department: ${u.department.toUpperCase()}</div>
         </div>
         <div class="user-actions">
+          <button class="btn small" data-act="edit" data-id="${u.id}">Edit</button>
           <button class="btn small danger" data-act="del" data-id="${u.id}">Delete</button>
         </div>
       `;
       userContainer.appendChild(div);
     });
+  }
+
+  function resetForm() {
+    editingUser = null;
+    editUserId.value = '';
+    formTitle.textContent = 'Create User';
+    submitBtn.textContent = 'Add User';
+    cancelBtn.style.display = 'none';
+    passwordLabel.textContent = 'Password';
+    passwordInput.required = true;
+    usernameInput.disabled = false;
+    form.reset();
+  }
+
+  function editUser(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    editingUser = user;
+    editUserId.value = user.id;
+    formTitle.textContent = 'Edit User';
+    submitBtn.textContent = 'Update User';
+    cancelBtn.style.display = 'inline-block';
+    passwordLabel.textContent = 'Password (leave blank to keep current)';
+    passwordInput.required = false;
+    usernameInput.disabled = true;
+
+    document.getElementById('username').value = user.username;
+    document.getElementById('name').value = user.name;
+    document.getElementById('department').value = user.department;
+    document.getElementById('password').value = '';
+    document.getElementById('isAdmin').checked = user.isAdmin;
+
+    form.scrollIntoView({ behavior: 'smooth' });
   }
 
   form.addEventListener('submit', async (e) => {
@@ -56,39 +99,61 @@
     const password = document.getElementById('password').value;
     const isAdminNew = document.getElementById('isAdmin').checked;
 
-    if (!username || !department || !name || !password) {
-      alert('Please fill in all fields.');
+    if (!department || !name) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    if (!editingUser && !password) {
+      alert('Password is required for new users.');
       return;
     }
 
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, department, name, password, isAdmin: isAdminNew })
-      });
+      let response;
+      if (editingUser) {
+        const payload = { name, department, isAdmin: isAdminNew };
+        if (password) {
+          payload.password = password;
+        }
+        response = await fetch(`/api/users/${editUserId.value}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        response = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, department, name, password, isAdmin: isAdminNew })
+        });
+      }
 
       if (response.ok) {
-        form.reset();
+        resetForm();
         await loadUsers();
       } else {
         const data = await response.json();
-        alert(data.error || 'Failed to create user');
+        alert(data.error || (editingUser ? 'Failed to update user' : 'Failed to create user'));
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to create user');
+      alert(editingUser ? 'Failed to update user' : 'Failed to create user');
     }
   });
 
   userContainer.addEventListener('click', async (e) => {
     const act = e.target?.dataset?.act;
     const id = parseInt(e.target?.dataset?.id || '-1', 10);
-    if (act === 'del' && id > 0) {
+    
+    if (act === 'edit' && id > 0) {
+      editUser(id);
+    } else if (act === 'del' && id > 0) {
       if (confirm('Delete this user?')) {
         try {
           const response = await fetch(`/api/users/${id}`, { method: 'DELETE' });
           if (response.ok) {
+            resetForm();
             await loadUsers();
           } else {
             const data = await response.json();
@@ -100,6 +165,10 @@
         }
       }
     }
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    resetForm();
   });
 
   backBtn.addEventListener('click', () => window.location.href = 'master.html');

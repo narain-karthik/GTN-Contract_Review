@@ -218,6 +218,59 @@ def create_user():
         db.close()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+@admin_required
+def update_user(user_id):
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    department = data.get('department', '').strip()
+    is_admin = data.get('isAdmin', False)
+    password = data.get('password', '').strip()
+    
+    if not all([name, department]):
+        return jsonify({'error': 'Name and department required'}), 400
+    
+    db = get_db()
+    
+    user = db.execute('SELECT username, is_admin FROM users WHERE id = ?', (user_id,)).fetchone()
+    if not user:
+        db.close()
+        return jsonify({'error': 'User not found'}), 404
+    
+    if user['username'] == 'admin' and user['is_admin'] and not is_admin:
+        admin_count = db.execute('SELECT COUNT(*) as count FROM users WHERE is_admin = 1').fetchone()['count']
+        if admin_count <= 1:
+            db.close()
+            return jsonify({'error': 'Cannot remove admin status from last admin user'}), 400
+    
+    try:
+        if password:
+            db.execute(
+                'UPDATE users SET name = ?, department = ?, is_admin = ?, password_hash = ? WHERE id = ?',
+                (name, department, 1 if is_admin else 0, generate_password_hash(password), user_id)
+            )
+        else:
+            db.execute(
+                'UPDATE users SET name = ?, department = ?, is_admin = ? WHERE id = ?',
+                (name, department, 1 if is_admin else 0, user_id)
+            )
+        db.commit()
+        db.close()
+        
+        return jsonify({
+            'success': True,
+            'user': {
+                'id': user_id,
+                'username': user['username'],
+                'name': name,
+                'department': department,
+                'isAdmin': is_admin
+            }
+        })
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/users/<int:user_id>', methods=['DELETE'])
 @admin_required
 def delete_user(user_id):
