@@ -5,9 +5,20 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 
 **Current State**: Fully functional Flask backend with SQLite database, user authentication, PO management, and three form types (CR, PED, LEAD).
 
-**Last Updated**: November 4, 2025
+**Last Updated**: November 5, 2025
 
 ## Recent Changes
+- **November 5, 2025: Amendment Details Auto-Save with Admin-Only Edit**
+  - Implemented auto-save functionality for Amendment Details field in both CR and PED forms
+  - Added amendment_details column to cr_forms table
+  - Created ped_forms and ped_form_rows tables with full auto-save support
+  - Amendment Details field is now:
+    - Editable only by Admin users (read-only for non-admins)
+    - Server-side enforcement prevents API bypass
+    - Auto-saves 2 seconds after typing stops
+    - Loads automatically when form opens
+  - Both CR and PED forms now have complete auto-save including amendment details
+
 - **November 4, 2025: Amendment Details Editable Field**
   - Added dedicated textarea field for Admin to enter Amendment Details in CR and PED forms
   - Field appears below the instructional "Note:" section
@@ -69,6 +80,8 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - id (PRIMARY KEY)
    - po_key (UNIQUE, NOT NULL) - Composite key: customer|bid|po|cr
    - customer, bid, po, cr (form header fields)
+   - record_no, record_date (TEXT)
+   - amendment_details (TEXT, admin-only editable)
    - last_modified_by (username)
    - last_modified_at (TIMESTAMP)
 
@@ -78,6 +91,24 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - item_no (NOT NULL)
    - part_number, part_description, rev, qty (TEXT)
    - cycles (JSON array of 62 cycle values)
+   - remarks (TEXT)
+
+5. **ped_forms table** (Auto-save feature):
+   - id (PRIMARY KEY)
+   - po_key (UNIQUE, NOT NULL) - Composite key: customer|bid|po|cr
+   - customer, bid, po, cr (form header fields)
+   - record_no, record_date (TEXT)
+   - amendment_details (TEXT, admin-only editable)
+   - last_modified_by (username)
+   - last_modified_at (TIMESTAMP)
+
+6. **ped_form_rows table** (Auto-save feature):
+   - id (PRIMARY KEY)
+   - ped_form_id (FOREIGN KEY to ped_forms)
+   - item_no (NOT NULL)
+   - part_number, part_description, rev, qty (TEXT)
+   - ped_cycles (JSON array of 11 PED cycle values)
+   - notes (JSON array of 7 department note values)
    - remarks (TEXT)
 
 ### Frontend (Static Files)
@@ -104,6 +135,8 @@ All original HTML/CSS/JS files preserved in `static/` folder:
 - `POST /api/restore` - Restore users and POs from backup (Admin only)
 - `POST /api/cr-form/save` - Auto-save CR form data (Authenticated users)
 - `GET /api/cr-form/load` - Load saved CR form data (Authenticated users)
+- `POST /api/ped-form/save` - Auto-save PED form data (Authenticated users)
+- `GET /api/ped-form/load` - Load saved PED form data (Authenticated users)
 
 ## User Roles and Permissions
 
