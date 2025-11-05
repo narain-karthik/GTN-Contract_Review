@@ -1046,8 +1046,12 @@ def export_cr_to_excel():
                     ws = wb.active
                     ws.title = "CR"
                     
-                    ws.cell(row=1, column=26, value=form['record_no'] or 'SAL/R02/Y')
-                    ws.cell(row=2, column=26, value=form['record_date'] or '')
+                    if template_key == 'CR_2':
+                        ws.cell(row=1, column=25, value=form['record_no'] or 'SAL/R02/Y')
+                        ws.cell(row=2, column=25, value=form['record_date'] or '')
+                    else:
+                        ws.cell(row=1, column=26, value=form['record_no'] or 'SAL/R02/Y')
+                        ws.cell(row=2, column=26, value=form['record_date'] or '')
                     
                     ws.cell(row=3, column=2, value=form['customer'] or '')
                     ws.cell(row=3, column=5, value=form['bid'] or '')
