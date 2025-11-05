@@ -8,6 +8,17 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 **Last Updated**: November 5, 2025
 
 ## Recent Changes
+- **November 5, 2025: CR Excel Export Feature**
+  - Implemented Excel export functionality for Contract Review (CR) forms
+  - Exports all CR form data (header info + row details) from database
+  - Automatically splits data into 3 separate Excel files by data range for easy printing
+  - All 3 files are packaged into a ZIP file (CR_Export.zip) for download
+  - Professional formatting with headers, borders, cell styling, and auto-adjusted column widths
+  - Empty files display "No CR forms in this range" message
+  - Export button available on Master Dashboard (Admin users can access)
+  - New API endpoint: GET /api/cr-export-excel
+  - Uses openpyxl library for Excel file generation
+
 - **November 5, 2025: LEAD Form Auto-Save Functionality**
   - Implemented complete auto-save functionality for LEAD Time Calculation Sheet
   - Added database tables (lead_forms and lead_form_rows) to persist LEAD form data
@@ -166,6 +177,7 @@ All original HTML/CSS/JS files preserved in `static/` folder:
 - `POST /api/restore` - Restore users and POs from backup (Admin only)
 - `POST /api/cr-form/save` - Auto-save CR form data (Authenticated users)
 - `GET /api/cr-form/load` - Load saved CR form data (Authenticated users)
+- `GET /api/cr-export-excel` - Export all CR forms to 3 Excel files in ZIP (Authenticated users)
 - `POST /api/ped-form/save` - Auto-save PED form data (Authenticated users)
 - `GET /api/ped-form/load` - Load saved PED form data (Authenticated users)
 - `POST /api/lead-form/save` - Save LEAD form data (Admin only)

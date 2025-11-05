@@ -1096,7 +1096,8 @@ def export_cr_to_excel():
                     
                     for row in rows_cursor.fetchall():
                         cycles = json.loads(row['cycles']) if row['cycles'] else []
-                        cycles_text = ', '.join([f"{c.get('dept', '')}: {c.get('value', '')}" for c in cycles])
+                        non_empty_cycles = [str(c) for c in cycles if c and str(c).strip()]
+                        cycles_text = ', '.join(non_empty_cycles) if non_empty_cycles else ''
                         
                         data_row = [
                             row['item_no'],
