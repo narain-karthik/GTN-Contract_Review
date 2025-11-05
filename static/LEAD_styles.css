@@ -60,6 +60,8 @@ body{margin:18px;background:#eef2f6;color:#111}
   background:#fafafa;border-radius:4px;font-size:13px;color:var(--header-text);
   min-width:120px;text-align:center;
 }
+input.meta-box{width:140px;font-family:inherit;font-size:inherit}
+input.meta-box:disabled{background:var(--locked);color:#6b7280;cursor:not-allowed}
 
 /* Doc info row */
 .doc-info{display:flex;justify-content:flex-start;padding:10px 0}

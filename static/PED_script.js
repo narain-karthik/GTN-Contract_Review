@@ -228,7 +228,7 @@
 
   function lockHeaderFields() {
     if (isAdmin) return;
-    const ids = ['customerName', 'customerSelect', 'bidDt', 'poRevDt', 'crRevDt'];
+    const ids = ['customerName', 'customerSelect', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.disabled = true; el.classList.add('locked-edit'); }

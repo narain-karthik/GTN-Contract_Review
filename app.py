@@ -50,10 +50,19 @@ def init_db():
             bid TEXT,
             po TEXT,
             cr TEXT,
+            record_no TEXT,
+            record_date TEXT,
             last_modified_by TEXT,
             last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    try:
+        db.execute('SELECT record_no FROM cr_forms LIMIT 1')
+    except:
+        db.execute('ALTER TABLE cr_forms ADD COLUMN record_no TEXT')
+        db.execute('ALTER TABLE cr_forms ADD COLUMN record_date TEXT')
+        db.commit()
     
     db.execute('''
         CREATE TABLE IF NOT EXISTS cr_form_rows (
@@ -488,6 +497,8 @@ def save_cr_form():
     bid = data.get('bid', '').strip()
     po = data.get('po', '').strip()
     cr = data.get('cr', '').strip()
+    record_no = data.get('recordNo', '').strip()
+    record_date = data.get('recordDate', '').strip()
     rows = data.get('rows', [])
     
     username = session.get('username', 'unknown')
@@ -503,17 +514,17 @@ def save_cr_form():
             form_id = form['id']
             db.execute('''
                 UPDATE cr_forms 
-                SET customer = ?, bid = ?, po = ?, cr = ?, 
+                SET customer = ?, bid = ?, po = ?, cr = ?, record_no = ?, record_date = ?,
                     last_modified_by = ?, last_modified_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            ''', (customer, bid, po, cr, username, form_id))
+            ''', (customer, bid, po, cr, record_no, record_date, username, form_id))
             
             db.execute('DELETE FROM cr_form_rows WHERE cr_form_id = ?', (form_id,))
         else:
             db.execute('''
-                INSERT INTO cr_forms (po_key, customer, bid, po, cr, last_modified_by)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (po_key, customer, bid, po, cr, username))
+                INSERT INTO cr_forms (po_key, customer, bid, po, cr, record_no, record_date, last_modified_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (po_key, customer, bid, po, cr, record_no, record_date, username))
             form_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
         
         for row in rows:
@@ -562,7 +573,7 @@ def load_cr_form():
     db = get_db()
     try:
         cursor = db.execute('''
-            SELECT id, customer, bid, po, cr, last_modified_by, last_modified_at
+            SELECT id, customer, bid, po, cr, record_no, record_date, last_modified_by, last_modified_at
             FROM cr_forms
             WHERE po_key = ?
         ''', (po_key,))
@@ -602,6 +613,8 @@ def load_cr_form():
             'bid': form['bid'] or '',
             'po': form['po'] or '',
             'cr': form['cr'] or '',
+            'recordNo': form['record_no'] or '',
+            'recordDate': form['record_date'] or '',
             'rows': rows,
             'lastModifiedBy': form['last_modified_by'] or '',
             'lastModifiedAt': form['last_modified_at'] or ''

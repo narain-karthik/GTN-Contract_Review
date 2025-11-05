@@ -197,7 +197,7 @@
   // ---------- Locks ----------
   function lockHeaderFields() {
     if (isAdmin) return;
-    const ids = ['customerName', 'customerSelect', 'bidDt', 'poRevDt', 'crRevDt'];
+    const ids = ['customerName', 'customerSelect', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (el) { el.disabled = true; el.classList.add('locked-edit'); }
@@ -614,6 +614,8 @@
     const bid = document.getElementById('bidDt')?.value || urlBid || '';
     const po = document.getElementById('poRevDt')?.value || urlPo || '';
     const cr = document.getElementById('crRevDt')?.value || urlCr || '';
+    const recordNo = document.getElementById('recordNo')?.value || '';
+    const recordDate = document.getElementById('recordDate')?.value || '';
     
     const rows = buildCRObjectsFromDOM();
     
@@ -627,6 +629,8 @@
           bid: bid,
           po: po,
           cr: cr,
+          recordNo: recordNo,
+          recordDate: recordDate,
           rows: rows
         })
       });
@@ -675,6 +679,12 @@
         if (data.exists && data.rows && data.rows.length > 0) {
           showSaveIndicator('📥 Loading saved data...');
           applyCRDataToDOM(data.rows);
+          if (data.recordNo && document.getElementById('recordNo')) {
+            document.getElementById('recordNo').value = data.recordNo;
+          }
+          if (data.recordDate && document.getElementById('recordDate')) {
+            document.getElementById('recordDate').value = data.recordDate;
+          }
           enforceCRAccess();
           if (data.lastModifiedBy) {
             setTimeout(() => {
@@ -730,7 +740,7 @@
       });
     });
     
-    ['customerName', 'bidDt', 'poRevDt', 'crRevDt'].forEach(id => {
+    ['customerName', 'bidDt', 'poRevDt', 'crRevDt', 'recordNo', 'recordDate'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', scheduleAutoSave);
     });
