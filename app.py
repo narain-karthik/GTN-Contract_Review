@@ -994,6 +994,158 @@ def load_lead_form():
         db.close()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/cr-export-excel', methods=['GET'])
+@login_required
+def export_cr_to_excel():
+    import json
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from io import BytesIO
+    import zipfile
+    from flask import make_response
+    
+    db = get_db()
+    try:
+        forms_cursor = db.execute('''
+            SELECT id, customer, bid, po, cr, record_no, record_date, amendment_details, last_modified_by, last_modified_at
+            FROM cr_forms
+            ORDER BY id
+        ''')
+        forms = forms_cursor.fetchall()
+        
+        if not forms:
+            db.close()
+            return jsonify({'error': 'No CR forms found to export'}), 404
+        
+        total_forms = len(forms)
+        forms_per_file = (total_forms + 2) // 3
+        
+        zip_buffer = BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file_index in range(3):
+                start_idx = file_index * forms_per_file
+                end_idx = min(start_idx + forms_per_file, total_forms)
+                
+                forms_subset = forms[start_idx:end_idx] if start_idx < total_forms else []
+                
+                wb = openpyxl.Workbook()
+                ws = wb.active
+                ws.title = f"CR Data {file_index + 1}"
+                
+                header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+                header_font = Font(bold=True, color="FFFFFF", size=11)
+                border = Border(
+                    left=Side(style='thin'),
+                    right=Side(style='thin'),
+                    top=Side(style='thin'),
+                    bottom=Side(style='thin')
+                )
+                
+                row_num = 1
+                
+                if not forms_subset:
+                    ws.cell(row=1, column=1, value="No CR forms in this range")
+                    ws.cell(row=1, column=1).font = Font(bold=True, size=12)
+                    ws.column_dimensions['A'].width = 30
+                
+                for form in forms_subset:
+                    form_id = form['id']
+                    
+                    ws.merge_cells(f'A{row_num}:H{row_num}')
+                    cell = ws.cell(row=row_num, column=1, value=f"CONTRACT REVIEW - {form['customer']}")
+                    cell.font = Font(bold=True, size=14)
+                    cell.alignment = Alignment(horizontal='center', vertical='center')
+                    cell.fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
+                    row_num += 1
+                    
+                    info_data = [
+                        ('Customer:', form['customer']),
+                        ('BID:', form['bid']),
+                        ('PO:', form['po']),
+                        ('CR:', form['cr']),
+                        ('Record No:', form['record_no']),
+                        ('Record Date:', form['record_date']),
+                        ('Amendment Details:', form['amendment_details'] or ''),
+                        ('Last Modified By:', form['last_modified_by']),
+                        ('Last Modified At:', form['last_modified_at'])
+                    ]
+                    
+                    for label, value in info_data:
+                        ws.cell(row=row_num, column=1, value=label).font = Font(bold=True)
+                        ws.cell(row=row_num, column=2, value=value or '')
+                        row_num += 1
+                    
+                    row_num += 1
+                    
+                    headers = ['Item No', 'Part Number', 'Part Description', 'Rev', 'Qty', 'Cycles', 'Remarks']
+                    for col_num, header in enumerate(headers, 1):
+                        cell = ws.cell(row=row_num, column=col_num, value=header)
+                        cell.font = header_font
+                        cell.fill = header_fill
+                        cell.alignment = Alignment(horizontal='center', vertical='center')
+                        cell.border = border
+                    
+                    row_num += 1
+                    
+                    rows_cursor = db.execute('''
+                        SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
+                        FROM cr_form_rows
+                        WHERE cr_form_id = ?
+                        ORDER BY id
+                    ''', (form_id,))
+                    
+                    for row in rows_cursor.fetchall():
+                        cycles = json.loads(row['cycles']) if row['cycles'] else []
+                        cycles_text = ', '.join([f"{c.get('dept', '')}: {c.get('value', '')}" for c in cycles])
+                        
+                        data_row = [
+                            row['item_no'],
+                            row['part_number'] or '',
+                            row['part_description'] or '',
+                            row['rev'] or '',
+                            row['qty'] or '',
+                            cycles_text,
+                            row['remarks'] or ''
+                        ]
+                        
+                        for col_num, value in enumerate(data_row, 1):
+                            cell = ws.cell(row=row_num, column=col_num, value=value)
+                            cell.border = border
+                            cell.alignment = Alignment(wrap_text=True, vertical='top')
+                        
+                        row_num += 1
+                    
+                    row_num += 2
+                
+                for column in ws.columns:
+                    max_length = 0
+                    column_letter = column[0].column_letter
+                    for cell in column:
+                        if cell.value:
+                            max_length = max(max_length, len(str(cell.value)))
+                    adjusted_width = min(max_length + 2, 50)
+                    ws.column_dimensions[column_letter].width = adjusted_width
+                
+                excel_buffer = BytesIO()
+                wb.save(excel_buffer)
+                excel_buffer.seek(0)
+                
+                filename = f"CR_{file_index + 1}.xlsx"
+                zip_file.writestr(filename, excel_buffer.read())
+        
+        db.close()
+        
+        zip_buffer.seek(0)
+        response = make_response(zip_buffer.read())
+        response.headers['Content-Type'] = 'application/zip'
+        response.headers['Content-Disposition'] = 'attachment; filename=CR_Export.zip'
+        
+        return response
+        
+    except Exception as e:
+        db.close()
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=5000, debug=True)

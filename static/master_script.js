@@ -11,6 +11,7 @@
   const backupBtn = document.getElementById('backupBtn');
   const restoreBtn = document.getElementById('restoreBtn');
   const restoreInput = document.getElementById('restoreInput');
+  const exportExcelBtn = document.getElementById('exportExcelBtn');
 
   let pos = [];
   let editingId = null;
@@ -210,6 +211,36 @@
     restoreBtn.addEventListener('click', () => restoreInput.click());
     restoreInput.addEventListener('change', (e) => restoreData(e.target.files?.[0]));
   }
+
+  exportExcelBtn.addEventListener('click', async () => {
+    try {
+      exportExcelBtn.disabled = true;
+      exportExcelBtn.textContent = 'Exporting...';
+      
+      const response = await fetch('/api/cr-export-excel');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'CR_Export.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        alert('Excel export completed! Check your downloads for CR_Export.zip containing 3 Excel files.');
+      } else {
+        const data = await response.json();
+        alert('Export failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Export error:', err);
+      alert('Failed to export: ' + err.message);
+    } finally {
+      exportExcelBtn.disabled = false;
+      exportExcelBtn.textContent = 'Export to Excel';
+    }
+  });
 
   manageUsersBtn.addEventListener('click', () => window.location.href = 'manage_users.html');
   logoutBtn.addEventListener('click', async () => {
