@@ -1118,11 +1118,13 @@ def export_cr_to_excel():
                     
                     row_num += 2
                 
-                for column in ws.columns:
+                from openpyxl.utils import get_column_letter
+                for col_idx in range(1, ws.max_column + 1):
                     max_length = 0
-                    column_letter = column[0].column_letter
-                    for cell in column:
-                        if cell.value:
+                    column_letter = get_column_letter(col_idx)
+                    for row_idx in range(1, ws.max_row + 1):
+                        cell = ws.cell(row=row_idx, column=col_idx)
+                        if cell.value and not isinstance(cell, openpyxl.cell.cell.MergedCell):
                             max_length = max(max_length, len(str(cell.value)))
                     adjusted_width = min(max_length + 2, 50)
                     ws.column_dimensions[column_letter].width = adjusted_width
