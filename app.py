@@ -1038,9 +1038,9 @@ def export_cr_to_excel():
                 ws.cell(row=3, column=2, value=form['customer'] or '')
                 ws.cell(row=3, column=5, value=form['bid'] or '')
                 ws.cell(row=3, column=8, value=form['po'] or '')
-                ws.cell(row=3, column=11, value=form['cr'] or '')
+                ws.cell(row=3, column=9, value=form['cr'] or '')
                 
-                ws.cell(row=16, column=2, value=form['amendment_details'] or '')
+                ws.cell(row=16, column=1, value=form['amendment_details'] or '')
                 
                 rows_cursor = db.execute('''
                     SELECT item_no, part_number, part_description, rev, qty, cycles, remarks
