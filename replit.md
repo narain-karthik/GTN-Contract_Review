@@ -8,6 +8,16 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
 **Last Updated**: November 5, 2025
 
 ## Recent Changes
+- **November 5, 2025: LEAD Form Save/Load Functionality**
+  - Implemented complete save/load functionality for LEAD Time Calculation Sheet
+  - Added database tables (lead_forms and lead_form_rows) to persist LEAD form data
+  - Created backend API endpoints (/api/lead-form/save and /api/lead-form/load)
+  - Added Save Form and Load Form buttons to the LEAD form interface
+  - LEAD form data now persists in database (previously only export was available)
+  - Admin-only save functionality - only admins can save/load forms
+  - Data includes: customer, bid, po, cr, record info, part details, dates, lead times, and remarks
+  - Follows the same pattern as CR and PED forms for consistency
+
 - **November 5, 2025: Amendment Details Auto-Save with Admin-Only Edit**
   - Implemented auto-save functionality for Amendment Details field in both CR and PED forms
   - Added amendment_details column to cr_forms table
@@ -111,6 +121,24 @@ Flask + SQLite application for managing multi-PO (Purchase Order) contract revie
    - notes (JSON array of 7 department note values)
    - remarks (TEXT)
 
+7. **lead_forms table** (Manual save feature):
+   - id (PRIMARY KEY)
+   - po_key (UNIQUE, NOT NULL) - Composite key: customer|bid|po|cr
+   - customer, bid, po, cr (form header fields)
+   - record_no, record_date (TEXT)
+   - last_modified_by (username)
+   - last_modified_at (TIMESTAMP)
+
+8. **lead_form_rows table** (Manual save feature):
+   - id (PRIMARY KEY)
+   - lead_form_id (FOREIGN KEY to lead_forms)
+   - item_no (NOT NULL)
+   - part_number, part_description, rev, qty (TEXT)
+   - customer_required_date (TEXT)
+   - standard_lead_time (TEXT)
+   - gtn_agreed_date (TEXT)
+   - remarks (TEXT)
+
 ### Frontend (Static Files)
 All original HTML/CSS/JS files preserved in `static/` folder:
 - **Login**: login.html, login_styles.css, login_script.js
@@ -137,6 +165,8 @@ All original HTML/CSS/JS files preserved in `static/` folder:
 - `GET /api/cr-form/load` - Load saved CR form data (Authenticated users)
 - `POST /api/ped-form/save` - Auto-save PED form data (Authenticated users)
 - `GET /api/ped-form/load` - Load saved PED form data (Authenticated users)
+- `POST /api/lead-form/save` - Save LEAD form data (Admin only)
+- `GET /api/lead-form/load` - Load saved LEAD form data (Authenticated users)
 
 ## User Roles and Permissions
 
