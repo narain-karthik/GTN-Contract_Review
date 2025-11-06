@@ -1053,6 +1053,12 @@ def export_cr_to_excel():
             'CR_3': (48, 72)
         }
         
+        remarks_column_mapping = {
+            'CR_1': 27,
+            'CR_2': 29,
+            'CR_3': 26
+        }
+        
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for form_idx, form in enumerate(forms):
@@ -1091,6 +1097,7 @@ def export_cr_to_excel():
                     data_start_row = 8
                     
                     cycle_start, cycle_end = cycle_mapping[template_key]
+                    remarks_col = remarks_column_mapping[template_key]
                     
                     for row_idx, row in enumerate(data_rows):
                         excel_row = data_start_row + row_idx
@@ -1109,9 +1116,10 @@ def export_cr_to_excel():
                         relevant_cycles = cycles[cycle_start:cycle_end]
                         for cycle_idx, cycle_val in enumerate(relevant_cycles):
                             col_num = 6 + cycle_idx
-                            write_cell(ws, excel_row, col_num, cycle_val if cycle_val else '', merged_map)
+                            value_to_write = cycle_val if cycle_val else ''
+                            write_cell(ws, excel_row, col_num, value_to_write, merged_map)
                         
-                        write_cell(ws, excel_row, 27, row['remarks'] or '', merged_map)
+                        write_cell(ws, excel_row, remarks_col, row['remarks'] or '', merged_map)
                     
                     excel_buffer = BytesIO()
                     wb.save(excel_buffer)
