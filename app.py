@@ -1079,8 +1079,8 @@ def export_cr_to_excel():
                     merged_map = build_merged_cell_map(ws)
                     
                     img = Image(logo_path)
-                    img.width = 120
-                    img.height = 120
+                    img.width = 80
+                    img.height = 60
                     ws.add_image(img, 'A1')
                     
                     if template_key == 'CR_2':
