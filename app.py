@@ -1002,6 +1002,7 @@ def export_cr_to_excel():
     from openpyxl.styles import Font, Alignment
     from openpyxl.utils import get_column_letter
     from openpyxl.cell.cell import MergedCell
+    from openpyxl.drawing.image import Image
     from io import BytesIO
     import zipfile
     from flask import make_response
@@ -1030,9 +1031,14 @@ def export_cr_to_excel():
         'CR_3': 'attached_assets/CR 3_1762338481711.xlsx'
     }
     
+    logo_path = 'attached_assets/GTN_LOGO_1762400078631.png'
+    
     for name, path in templates.items():
         if not os.path.exists(path):
             return jsonify({'error': f'Template file {name} not found'}), 404
+    
+    if not os.path.exists(logo_path):
+        return jsonify({'error': 'GTN logo file not found'}), 404
     
     db = get_db()
     try:
@@ -1071,6 +1077,11 @@ def export_cr_to_excel():
                     ws.title = "CR"
                     
                     merged_map = build_merged_cell_map(ws)
+                    
+                    img = Image(logo_path)
+                    img.width = 120
+                    img.height = 120
+                    ws.add_image(img, 'A1')
                     
                     if template_key == 'CR_2':
                         write_cell(ws, 1, 25, form['record_no'] or 'SAL/R02/Y', merged_map)
