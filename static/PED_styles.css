@@ -48,8 +48,12 @@ th{background:#f2f4f7;font-weight:700;text-align:center;color:var(--header-text)
 .cycle.state-na{color:#666;font-weight:700;font-size:12px}
 
 /* dept-note */
-.dept-note{min-height:var(--dept-note-height);max-width:320px; cursor: pointer}
+.dept-note{min-height:var(--dept-note-height);max-width:320px; cursor: pointer;text-align:center}
 .dept-note:focus{outline:2px solid rgba(11,94,215,0.18); box-shadow: none}
+/* dept-note state styling - match cycle cells */
+.dept-note.state-yes{color:#28a745;font-weight:700;font-size:16px}
+.dept-note.state-no{color:#c42b2b;font-weight:700;font-size:14px}
+.dept-note.state-na{color:#666;font-weight:700;font-size:12px}
 
 /* actions */
 .actions-col{width:90px}

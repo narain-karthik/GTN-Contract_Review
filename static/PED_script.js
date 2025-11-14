@@ -93,6 +93,11 @@
           td.innerText = states[idx];
           td.dataset.toggleIndex = String(idx);
           td.setAttribute('aria-pressed', states[idx] !== '' ? 'true' : 'false');
+          // Add state classes for styling
+          td.classList.remove('state-yes', 'state-no', 'state-na');
+          if (states[idx] === '✓') td.classList.add('state-yes');
+          if (states[idx] === 'x') td.classList.add('state-no');
+          if (states[idx] === 'NA') td.classList.add('state-na');
         }
         return;
       }
@@ -114,6 +119,11 @@
           t.innerText = states[idx];
           t.dataset.toggleIndex = String(idx);
           t.setAttribute('aria-pressed', states[idx] !== '' ? 'true' : 'false');
+          // Add state classes for styling
+          t.classList.remove('state-yes', 'state-no', 'state-na');
+          if (states[idx] === '✓') t.classList.add('state-yes');
+          if (states[idx] === 'x') t.classList.add('state-no');
+          if (states[idx] === 'NA') t.classList.add('state-na');
         }
       }
     });
@@ -315,7 +325,14 @@
       });
       // Dept-notes (7)
       const noteTds = tds.slice(16, 23);
-      noteTds.forEach((td, idx)=>{ td.innerText = (r.notes || [])[idx] ?? ''; });
+      noteTds.forEach((td, idx)=>{ 
+        const val = (r.notes || [])[idx] ?? '';
+        td.innerText = val;
+        td.classList.remove('state-yes','state-no','state-na');
+        if (val === '✓') td.classList.add('state-yes');
+        else if (val === 'x') td.classList.add('state-no');
+        else if (val === 'NA') td.classList.add('state-na');
+      });
       // Remarks
       if (tds[23]) tds[23].innerText = r.remarks ?? '';
     });
