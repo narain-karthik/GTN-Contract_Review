@@ -26,9 +26,16 @@ def init_db():
             name TEXT NOT NULL,
             department TEXT NOT NULL,
             is_admin BOOLEAN NOT NULL DEFAULT 0,
+            lead_form_access BOOLEAN NOT NULL DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    try:
+        db.execute('SELECT lead_form_access FROM users LIMIT 1')
+    except:
+        db.execute('ALTER TABLE users ADD COLUMN lead_form_access BOOLEAN NOT NULL DEFAULT 0')
+        db.commit()
     
     db.execute('''
         CREATE TABLE IF NOT EXISTS pos (
@@ -243,7 +250,7 @@ def get_session():
 @admin_required
 def get_users():
     db = get_db()
-    users = db.execute('SELECT id, username, name, department, is_admin FROM users ORDER BY id').fetchall()
+    users = db.execute('SELECT id, username, name, department, is_admin, lead_form_access FROM users ORDER BY id').fetchall()
     db.close()
     
     return jsonify([{
@@ -251,7 +258,8 @@ def get_users():
         'username': user['username'],
         'name': user['name'],
         'department': user['department'],
-        'isAdmin': bool(user['is_admin'])
+        'isAdmin': bool(user['is_admin']),
+        'leadFormAccess': bool(user['lead_form_access'])
     } for user in users])
 
 @app.route('/api/users', methods=['POST'])
@@ -263,6 +271,7 @@ def create_user():
     name = data.get('name', '').strip()
     department = data.get('department', '').strip()
     is_admin = data.get('isAdmin', False)
+    lead_form_access = data.get('leadFormAccess', False)
     
     if not all([username, password, name, department]):
         return jsonify({'error': 'All fields required'}), 400
@@ -276,8 +285,8 @@ def create_user():
     
     try:
         db.execute(
-            'INSERT INTO users (username, password_hash, name, department, is_admin) VALUES (?, ?, ?, ?, ?)',
-            (username, generate_password_hash(password), name, department, 1 if is_admin else 0)
+            'INSERT INTO users (username, password_hash, name, department, is_admin, lead_form_access) VALUES (?, ?, ?, ?, ?, ?)',
+            (username, generate_password_hash(password), name, department, 1 if is_admin else 0, 1 if lead_form_access else 0)
         )
         db.commit()
         user_id = db.execute('SELECT last_insert_rowid() as id').fetchone()['id']
@@ -290,7 +299,8 @@ def create_user():
                 'username': username,
                 'name': name,
                 'department': department,
-                'isAdmin': is_admin
+                'isAdmin': is_admin,
+                'leadFormAccess': lead_form_access
             }
         })
     except Exception as e:
@@ -304,6 +314,7 @@ def update_user(user_id):
     name = data.get('name', '').strip()
     department = data.get('department', '').strip()
     is_admin = data.get('isAdmin', False)
+    lead_form_access = data.get('leadFormAccess', False)
     password = data.get('password', '').strip()
     
     if not all([name, department]):
@@ -325,13 +336,13 @@ def update_user(user_id):
     try:
         if password:
             db.execute(
-                'UPDATE users SET name = ?, department = ?, is_admin = ?, password_hash = ? WHERE id = ?',
-                (name, department, 1 if is_admin else 0, generate_password_hash(password), user_id)
+                'UPDATE users SET name = ?, department = ?, is_admin = ?, lead_form_access = ?, password_hash = ? WHERE id = ?',
+                (name, department, 1 if is_admin else 0, 1 if lead_form_access else 0, generate_password_hash(password), user_id)
             )
         else:
             db.execute(
-                'UPDATE users SET name = ?, department = ?, is_admin = ? WHERE id = ?',
-                (name, department, 1 if is_admin else 0, user_id)
+                'UPDATE users SET name = ?, department = ?, is_admin = ?, lead_form_access = ? WHERE id = ?',
+                (name, department, 1 if is_admin else 0, 1 if lead_form_access else 0, user_id)
             )
         db.commit()
         db.close()
@@ -343,7 +354,8 @@ def update_user(user_id):
                 'username': user['username'],
                 'name': name,
                 'department': department,
-                'isAdmin': is_admin
+                'isAdmin': is_admin,
+                'leadFormAccess': lead_form_access
             }
         })
     except Exception as e:

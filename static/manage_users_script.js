@@ -45,7 +45,7 @@
       div.className = 'user-card';
       div.innerHTML = `
         <div class="user-meta">
-          <div class="name">${u.name} <span class="muted">(${u.username})</span> ${u.isAdmin ? '<span class="badge">Admin</span>' : ''}</div>
+          <div class="name">${u.name} <span class="muted">(${u.username})</span> ${u.isAdmin ? '<span class="badge">Admin</span>' : ''} ${u.leadFormAccess ? '<span class="badge lead">LEAD</span>' : ''}</div>
           <div class="dept">Department: ${u.department.toUpperCase()}</div>
         </div>
         <div class="user-actions">
@@ -87,6 +87,7 @@
     document.getElementById('department').value = user.department;
     document.getElementById('password').value = '';
     document.getElementById('isAdmin').checked = user.isAdmin;
+    document.getElementById('leadFormAccess').checked = user.leadFormAccess || false;
 
     form.scrollIntoView({ behavior: 'smooth' });
   }
@@ -98,6 +99,7 @@
     const name = document.getElementById('name').value.trim();
     const password = document.getElementById('password').value;
     const isAdminNew = document.getElementById('isAdmin').checked;
+    const leadFormAccessNew = document.getElementById('leadFormAccess').checked;
 
     if (!department || !name) {
       alert('Please fill in all required fields.');
@@ -112,7 +114,7 @@
     try {
       let response;
       if (editingUser) {
-        const payload = { name, department, isAdmin: isAdminNew };
+        const payload = { name, department, isAdmin: isAdminNew, leadFormAccess: leadFormAccessNew };
         if (password) {
           payload.password = password;
         }
@@ -125,7 +127,7 @@
         response = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, department, name, password, isAdmin: isAdminNew })
+          body: JSON.stringify({ username, department, name, password, isAdmin: isAdminNew, leadFormAccess: leadFormAccessNew })
         });
       }
 
