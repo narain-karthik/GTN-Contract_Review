@@ -41,11 +41,11 @@ th{background:#f2f4f7;font-weight:700;text-align:center;color:var(--header-text)
 .editable{min-width:140px;outline:none;white-space:pre-wrap}
 .singleline{white-space:nowrap}
 .bordered{border:1px solid #d0d7de;padding:6px;background:#fff;border-radius:2px}
-.cycle{cursor:pointer;text-align:center;user-select:none;background:#fff;min-width:40px;white-space:nowrap}
+.cycle{cursor:pointer;text-align:center;user-select:none;background:#fff;min-width:40px;white-space:nowrap;position:relative;padding:8px}
 .cycle:hover{background:#f8f9fc}
-.cycle.state-yes{color:green;font-weight:700}
-.cycle.state-no{color:#c42b2b;font-weight:700}
-.cycle.state-na{color:#666;font-weight:700}
+.cycle.state-yes{color:#28a745;font-weight:700;font-size:16px}
+.cycle.state-no{color:#c42b2b;font-weight:700;font-size:14px}
+.cycle.state-na{color:#666;font-weight:700;font-size:12px}
 
 /* dept-note */
 .dept-note{min-height:var(--dept-note-height);max-width:320px; cursor: pointer}
